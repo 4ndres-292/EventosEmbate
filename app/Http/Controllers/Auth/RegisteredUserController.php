@@ -34,12 +34,26 @@ class RegisteredUserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'phone' => 'required|string|max:15',  // Agregar validación de teléfono
+            'gender' => 'required|boolean', // Validar género (true o false)
+            'birthdate' => 'required|date', // Validar fecha de nacimiento
+            'type_participant' => 'required|array', // Asegurar que type_participant sea un array
+            'type_participant.*' => 'in:Estudiante,Universitario,Docente,Administrativo,Emprendedor,Empresario', // Validar cada tipo
+            'career' => 'required|array', // Validar carrera
+            'career.*' => 'in:Ingeniería de Sistemas,Ingeniería Electrónica,Ingeniería Industrial,Ingeniería Civil,Ingeniería Mecánica', // Validar cada carrera
+            'institution' => 'required|string|max:255', // Validar institución
         ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'phone' => $request->phone,
+            'gender' => $request->gender,
+            'birthdate' => $request->birthdate,
+            'type_participant' => json_encode($request->type_participant), // Convierte el array a JSON
+            'career' => json_encode($request->career), // Convierte el array a JSON
+            'institution' => $request->institution,
         ]);
 
         event(new Registered($user));
