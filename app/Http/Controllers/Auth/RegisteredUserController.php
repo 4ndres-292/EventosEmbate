@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\TypeUser;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -32,15 +33,15 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
+            'email' => 'required|string|lowercase|email|max:255|unique:' . User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'phone' => 'required|string|max:15',  // Agregar validación de teléfono
             'gender' => 'required|boolean', // Validar género (true o false)
             'birthdate' => 'required|date', // Validar fecha de nacimiento
-            'type_participant' => 'required|array', // Asegurar que type_participant sea un array
-            'type_participant.*' => 'in:Estudiante,Universitario,Docente,Administrativo,Emprendedor,Empresario', // Validar cada tipo
-            'career' => 'required|array', // Validar carrera
-            'career.*' => 'in:Ingeniería de Sistemas,Ingeniería Electrónica,Ingeniería Industrial,Ingeniería Civil,Ingeniería Mecánica', // Validar cada carrera
+            'type_participant' => 'required|string|max:25', // Asegurar que type_participant sea un array
+            //'type_participant.*' => 'in:Estudiante,Universitario,Docente,Administrativo,Emprendedor,Empresario', // Validar cada tipo
+            'career' => 'required|string|max:25', // Validar carrera
+            //'career.*' => 'in:Ingeniería de Sistemas,Ingeniería Electrónica,Ingeniería Industrial,Ingeniería Civil,Ingeniería Mecánica', // Validar cada carrera
             'institution' => 'required|string|max:255', // Validar institución
         ]);
 
@@ -51,9 +52,10 @@ class RegisteredUserController extends Controller
             'phone' => $request->phone,
             'gender' => $request->gender,
             'birthdate' => $request->birthdate,
-            'type_participant' => json_encode($request->type_participant), // Convierte el array a JSON
-            'career' => json_encode($request->career), // Convierte el array a JSON
+            'type_participant' => $request->type_participant, // Convierte el array a JSON
+            'career' => $request->career, // Convierte el array a JSON
             'institution' => $request->institution,
+            'type_user_id' => TypeUser::where('name', 'Estudiante')->value('id') ?? 1,
         ]);
 
         event(new Registered($user));

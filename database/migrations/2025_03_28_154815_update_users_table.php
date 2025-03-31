@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -15,8 +14,8 @@ return new class extends Migration
             $table->string('phone')->default('')->after('password');
             $table->boolean('gender')->default(true)->after('phone');
             $table->date('birthdate')->default(now())->after('gender');
-            $table->json('type_participant')->default(json_encode([]))->after('birthdate');
-            $table->json('career')->nullable()->after('type_participant');
+            $table->string('type_participant')->default(json_encode([]))->after('birthdate');
+            $table->string('career')->nullable()->after('type_participant');
             $table->string('institution')->default('')->after('career');
         });
     }

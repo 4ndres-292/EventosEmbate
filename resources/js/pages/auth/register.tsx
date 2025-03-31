@@ -14,8 +14,8 @@ type RegisterForm = {
     phone: string;
     gender: boolean;
     birthdate: string;
-    type_participant: string[];
-    career: string[];
+    type_participant: string;
+    career: string;
     institution: string;
     email: string;
     password: string;
@@ -28,8 +28,8 @@ export default function Register() {
         phone: '',
         gender: true,
         birthdate: '',
-        type_participant: [],
-        career: [],
+        type_participant: '',
+        career: '',
         institution: '',
         email: '',
         password: '',
@@ -67,13 +67,13 @@ const inputRef = useRef<HTMLDivElement>(null);
 
 const handleCareerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    setData('career', [value]);
+    setData('career', value);
     setFilteredCareers(careersList.filter((career) => career.toLowerCase().includes(value.toLowerCase())));
     setShowDropdown(true);
 };
 
 const handleSelectCareer = (career: string) => {
-    setData('career', [career]);
+    setData('career', career);
     setShowDropdown(false);
 };
 
@@ -168,8 +168,8 @@ useEffect(() => {
                             required
                             autoFocus
                             tabIndex={5}
-                            value={data.type_participant[0] || ''}
-                            onChange={(e) => setData('type_participant', [e.target.value])}
+                            value={data.type_participant || ''}
+                            onChange={(e) => setData('type_participant', e.target.value)}
                             disabled={processing}
                             className="border p-1 rounded-md"
                         >
@@ -189,7 +189,7 @@ useEffect(() => {
                             id="career"
                             type="text"
                             tabIndex={6}
-                            value={data.career[0] || ""}
+                            value={data.career || ""}
                             onChange={handleCareerChange}
                             onClick={() => setShowDropdown(true)} // Solo muestra la lista cuando haces clic
                             disabled={processing}
