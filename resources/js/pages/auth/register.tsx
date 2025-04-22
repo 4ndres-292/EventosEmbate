@@ -1,6 +1,7 @@
 import { Head, useForm } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
 import { FormEventHandler, useState, useRef, useEffect} from 'react';
+import axios from 'axios';
 
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
@@ -12,7 +13,7 @@ import AuthLayout from '@/layouts/auth-layout';
 type RegisterForm = {
     name: string;
     phone: string;
-    gender: boolean;
+    gender: 'Masculino' | 'Femenino';
     birthdate: string;
     type_participant: string;
     career: string;
@@ -26,7 +27,7 @@ export default function Register() {
     const { data, setData, post, processing, errors, reset } = useForm<Required<RegisterForm>>({
         name: '',
         phone: '',
-        gender: true,
+        gender: 'Masculino',
         birthdate: '',
         type_participant: '',
         career: '',
@@ -36,57 +37,72 @@ export default function Register() {
         password_confirmation: '',
     });
 
-    const participantTypes = ['Estudiante',
-                              'Universitario',
-                              'Docente',
-                              'Administrativo',
-                              'Emprendedor',
-                              'Empresario'];    
+ // Estados para almacenar los datos de las API
+ const [participantTypes, setParticipantTypes] = useState<string[]>([]);
+ const [careersList, setCareersList] = useState<string[]>([]);
+ const [institutionsList, setInstitutionsList] = useState<string[]>([]);
 
-    const careersList = ['Ingeniería de Sistemas', 
-                         'Ingeniería Electrónica', 
-                         'Ingeniería Industrial', 
-                         'Ingeniería Civil', 
-                         'Ingeniería Mecánica'];
-        
-    const submit: FormEventHandler = (e) => {
-        e.preventDefault();
-        post(route('register'), {
-            onFinish: () => reset('password', 'password_confirmation'),
-        });
-    };
+ // Estados para el filtrado de carreras e instituciones
+ const [filteredCareers, setFilteredCareers] = useState<string[]>(careersList);
+ const [filteredInstitutions, setFilteredInstitutions] = useState<string[]>(institutionsList);
 
+ // Estados para mostrar los dropdowns
+ const [showCareerDropdown, setShowCareerDropdown] = useState(false);
+ const [showInstitutionDropdown, setShowInstitutionDropdown] = useState(false);
 
+ // Obtener los datos de las APIs al cargar el componente
+ useEffect(() => {
+     axios.get('api/participant-types').then((response) => {
+         setParticipantTypes(response.data.map((type: { name: string }) => type.name));
+     });
 
+     axios.get('/api/career-types').then((response) => {
+         setCareersList(response.data.map((career: { name: string }) => career.name));
+         setFilteredCareers(response.data.map((career: { name: string }) => career.name)); // Inicializa con todos los elementos
+     });
 
+     axios.get('/api/institutions').then((response) => {
+         setInstitutionsList(response.data.map((institution: { name: string }) => institution.name));
+         setFilteredInstitutions(response.data.map((institution: { name: string }) => institution.name)); // Inicializa con todos los elementos
+     });
+ }, []);
 
-    //
-    const [showDropdown, setShowDropdown] = useState(false);
-const [filteredCareers, setFilteredCareers] = useState<string[]>(careersList);
+ const submit: FormEventHandler = (e) => {
+     e.preventDefault();
+     post(route('register'), {
+         onFinish: () => reset('password', 'password_confirmation'),
+     });
+ };   
+
+const institutionRef = useRef<HTMLDivElement>(null);
 const inputRef = useRef<HTMLDivElement>(null);
+
+// Mostrar campo carrera si es universitario
+const isUniversitario = data.type_participant === 'Universitario';
 
 const handleCareerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setData('career', value);
     setFilteredCareers(careersList.filter((career) => career.toLowerCase().includes(value.toLowerCase())));
-    setShowDropdown(true);
+    setShowCareerDropdown(true);
 };
 
 const handleSelectCareer = (career: string) => {
     setData('career', career);
-    setShowDropdown(false);
+    setShowCareerDropdown(false);
 };
 
-// Cierra la lista si se hace clic fuera
-useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-        if (inputRef.current && !inputRef.current.contains(event.target as Node)) {
-            setShowDropdown(false);
-        }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-}, []);
+const handleInstitutionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setData('institution', value);
+    setFilteredInstitutions(institutionsList.filter(inst => inst.toLowerCase().includes(value.toLowerCase())));
+    setShowInstitutionDropdown(true);
+};
+
+const handleSelectInstitution = (institution: string) => {
+    setData('institution', institution);
+    setShowInstitutionDropdown(false);
+};
 
     return (
         <AuthLayout title="Crear una cuenta" description="Ingrese los datos a continuación para crear su cuenta">
@@ -116,7 +132,6 @@ useEffect(() => {
                             id="phone"
                             type="tel"
                             required
-                            autoFocus
                             tabIndex={2}
                             autoComplete="phone"
                             value={data.phone}
@@ -132,15 +147,14 @@ useEffect(() => {
                         <select
                             id="gender"
                             required
-                            autoFocus
                             tabIndex={3}
-                            value={data.gender.toString()}
-                            onChange={(e) => setData('gender', e.target.value === 'true')}
+                            value={data.gender}
+                            onChange={(e) => setData('gender', e.target.value as 'Masculino' | 'Femenino')}
                             disabled={processing}
                             className='border p-1 rounded-md'
                         >
-                            <option value="true">Masculino</option>
-                            <option value="false">Femenino</option>
+                            <option value="Masculino">Masculino</option>
+                            <option value="Femenino">Femenino</option>
                         </select>
                         <InputError message={errors.gender} className="mt-2" />
                     </div>
@@ -151,7 +165,6 @@ useEffect(() => {
                             id="birthdate"
                             type="date"
                             required
-                            autoFocus
                             tabIndex={4}
                             autoComplete="birthdate"
                             value={data.birthdate}
@@ -166,7 +179,6 @@ useEffect(() => {
                         <select
                             id="type_participant"
                             required
-                            autoFocus
                             tabIndex={5}
                             value={data.type_participant || ''}
                             onChange={(e) => setData('type_participant', e.target.value)}
@@ -183,49 +195,65 @@ useEffect(() => {
                         <InputError message={errors.type_participant} className="mt-2" />
                     </div>
 
-                    <div className="relative" ref={inputRef}>
-                        <Label htmlFor="career">Carrera (Solo si esta en una)</Label>
+                    {isUniversitario && (
+                        <div className="relative" ref={inputRef}>
+                            <Label htmlFor="career">Carrera <span className="text-red-500">*</span></Label>
+                            <Input
+                                id="career"
+                                type="text"
+                                tabIndex={6}
+                                value={data.career || ''}
+                                required={isUniversitario}
+                                onChange={handleCareerChange}
+                                onClick={() => setShowCareerDropdown(true)}
+                                disabled={processing}
+                                placeholder="Escriba su carrera"
+                                className="w-full"
+                            />
+                            {showCareerDropdown && filteredCareers.length > 0 && (
+                                <div className="absolute z-10 w-full bg-white border rounded-md shadow-md max-h-40 overflow-y-auto">
+                                    {filteredCareers.map((career) => (
+                                        <div
+                                            key={career}
+                                            className="p-2 hover:bg-gray-100 cursor-pointer"
+                                            onClick={() => handleSelectCareer(career)}
+                                        >
+                                            {career}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            <InputError message={errors.career} className="mt-2" />
+                        </div>
+                    )}
+
+                    <div className="relative" ref={institutionRef}>
+                        <Label htmlFor="institution">Institución <span className="text-red-500">*</span></Label>
                         <Input
-                            id="career"
+                            id="institution"
                             type="text"
-                            tabIndex={6}
-                            value={data.career || ""}
-                            onChange={handleCareerChange}
-                            onClick={() => setShowDropdown(true)} // Solo muestra la lista cuando haces clic
+                            tabIndex={7}
+                            autoComplete="institution"
+                            required
+                            value={data.institution}
+                            onChange={handleInstitutionChange}
+                            onClick={() => setShowInstitutionDropdown(true)}
                             disabled={processing}
-                            placeholder="Escriba su carrera"
-                            className="w-full"
+                            placeholder="Institución a la que pertenece"
                         />
-                        {showDropdown && filteredCareers.length > 0 && (
+                        {showInstitutionDropdown && filteredInstitutions.length > 0 && (
                             <div className="absolute z-10 w-full bg-white border rounded-md shadow-md max-h-40 overflow-y-auto">
-                                {filteredCareers.map((career) => (
+                                {filteredInstitutions.map((institution) => (
                                     <div
-                                        key={career}
+                                        key={institution}
                                         className="p-2 hover:bg-gray-100 cursor-pointer"
-                                        onClick={() => handleSelectCareer(career)}
+                                        onClick={() => handleSelectInstitution(institution)}
                                     >
-                                        {career}
+                                        {institution}
                                     </div>
                                 ))}
                             </div>
                         )}
-                        <InputError message={errors.career} className="mt-2" />
-                    </div>
-
-                    <div className="grid gap-2">
-                        <Label htmlFor="institution">Institución</Label>
-                        <Input
-                            id="institution"
-                            type="text"
-                            required
-                            autoFocus
-                            tabIndex={7}
-                            autoComplete="institution"
-                            value={data.institution}
-                            onChange={(e) => setData('institution', e.target.value)}
-                            disabled={processing}
-                            placeholder="Institución a la que pertenece"
-                        />
                         <InputError message={errors.institution} className="mt-2" />
                     </div>
 

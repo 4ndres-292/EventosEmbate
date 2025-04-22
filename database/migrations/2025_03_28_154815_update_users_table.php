@@ -12,7 +12,7 @@ return new class extends Migration {
     {
         Schema::table('users', function (Blueprint $table) {
             $table->string('phone')->default('')->after('password');
-            $table->boolean('gender')->default(true)->after('phone');
+            $table->string('gender')->default('Masculino')->after('phone');
             $table->date('birthdate')->default(now())->after('gender');
             $table->string('type_participant')->default(json_encode([]))->after('birthdate');
             $table->string('career')->nullable()->after('type_participant');

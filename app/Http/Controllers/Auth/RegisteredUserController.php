@@ -36,11 +36,11 @@ class RegisteredUserController extends Controller
             'email' => 'required|string|lowercase|email|max:255|unique:' . User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'phone' => 'required|string|max:15',  // Agregar validación de teléfono
-            'gender' => 'required|boolean', // Validar género (true o false)
+            'gender' => 'required|string|in:Masculino,Femenino', // Validar género (true o false)
             'birthdate' => 'required|date', // Validar fecha de nacimiento
             'type_participant' => 'required|string|max:25', // Asegurar que type_participant sea un array
             //'type_participant.*' => 'in:Estudiante,Universitario,Docente,Administrativo,Emprendedor,Empresario', // Validar cada tipo
-            'career' => 'required|string|max:25', // Validar carrera
+            'career' => 'nullable|string|max:25', // Validar carrera
             //'career.*' => 'in:Ingeniería de Sistemas,Ingeniería Electrónica,Ingeniería Industrial,Ingeniería Civil,Ingeniería Mecánica', // Validar cada carrera
             'institution' => 'required|string|max:255', // Validar institución
         ]);
@@ -52,8 +52,8 @@ class RegisteredUserController extends Controller
             'phone' => $request->phone,
             'gender' => $request->gender,
             'birthdate' => $request->birthdate,
-            'type_participant' => $request->type_participant, // Convierte el array a JSON
-            'career' => $request->career, // Convierte el array a JSON
+            'type_participant' => $request->type_participant,
+            'career' => $request->career,
             'institution' => $request->institution,
             'type_user_id' => TypeUser::where('name', 'Estudiante')->value('id') ?? 1,
         ]);
