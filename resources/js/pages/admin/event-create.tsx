@@ -19,11 +19,6 @@ type EventForm = {
     location: string;
 };
 
-type Location = {
-    id: number;
-    name: string;
-};
-
 export default function EventCreate() {
     const { data, setData, post, processing, errors, reset } = useForm<Required<EventForm>>({
         name_event: '',
@@ -41,16 +36,12 @@ export default function EventCreate() {
     };
 
     // Obtener ubicaciones desde API
-    const [locations, setLocations] = useState<Location[]>([]);
+    const [locations, setLocations] = useState<string[]>([]);
 
     useEffect(() => {
-        axios.get('/api/locations')
-            .then(response => {
-                setLocations(response.data); // CORREGIDO: ya no se hace map innecesario
-            })
-            .catch(error => {
-                console.error('Error fetching locations:', error);
-            });
+        axios.get('api/locations').then((response) => {
+        setLocations(response.data.map((type: { name: string }) => type.name));
+        });
     }, []);
 
     return (
@@ -130,9 +121,9 @@ export default function EventCreate() {
                             onChange={(e) => setData('location', e.target.value)}
                         >
                             <option value="">Selecciona una ubicación</option>
-                            {locations.map((loc) => (
-                                <option key={loc.id} value={loc.id}>
-                                    {loc.name}
+                            {locations.map((type) => (
+                                <option key={type} value={type}>
+                                    {type}
                                 </option>
                             ))}
                         </select>
