@@ -8,7 +8,8 @@ use App\Http\Controllers\Controller;
 
 class InstitutionController extends Controller
 {
-    public function index(){
+    public function index()
+    {
         return response()->json(Institution::all());
     }
 }

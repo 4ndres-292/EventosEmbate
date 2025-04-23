@@ -39,10 +39,18 @@ export default function EventCreate() {
     const [locations, setLocations] = useState<string[]>([]);
 
     useEffect(() => {
-        axios.get('api/locations').then((response) => {
-        setLocations(response.data.map((type: { name: string }) => type.name));
-        });
+        const fetchLocations = async () => {
+            try {
+                const response = await axios.get('api/locations');
+                setLocations(response.data.map((loc: { name: string }) => loc.name));
+            } catch (error) {
+                console.error("Error al cargar ubicaciones", error);
+            }
+        };
+    
+        fetchLocations();
     }, []);
+    
 
     return (
         <AuthLayout title="Crear un evento" description="Ingresa los datos para crear tu evento">

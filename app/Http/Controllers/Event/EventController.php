@@ -44,7 +44,7 @@ class EventController extends Controller
             'description_event' => 'required|string',
             'image_event' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // 2MB máximo
             'date_event' => 'required|date',
-            'ubication' => 'required|string',
+            'location' => 'required|string',
         ]);
 
         $validated['owner'] = Auth::user()->email;
@@ -52,13 +52,13 @@ class EventController extends Controller
         // Manejo de la imagen
         if ($request->hasFile('image_event')) {
             $image = $request->file('image_event');
-            
+
             // Generar nombre único para la imagen
             $imageName = Str::slug($request->name_event) . '-' . time() . '.' . $image->getClientOriginalExtension();
-            
+
             // Guardar imagen en storage/app/public/events
             $imagePath = $image->storeAs('public/events', $imageName);
-            
+
             // Guardar ruta relativa en la base de datos
             $validated['image_event'] = 'events/' . $imageName;
         }
@@ -98,7 +98,7 @@ class EventController extends Controller
             'description_event' => 'required|string',
             'image_event' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'date_event' => 'required|date',
-            'ubication' => 'required|string'
+            'location' => 'required|string'
         ]);
 
         // Actualizar la imagen si es que se sube una nueva
@@ -121,7 +121,7 @@ class EventController extends Controller
      */
     public function destroy(Event $event)
     {
-         // Eliminar la imagen del servidor si existe
+        // Eliminar la imagen del servidor si existe
         if ($event->image_event) {
             Storage::delete('public/' . $event->image_event);
         }
@@ -143,4 +143,3 @@ class EventController extends Controller
         ]);
     }
 }
-
