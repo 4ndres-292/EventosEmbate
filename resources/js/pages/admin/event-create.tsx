@@ -105,18 +105,19 @@ export default function EventCreate() {
                         <InputError message={errors.image_event} />
                     </div>
 
-                    {/* Fecha */}
+                    {/* Fecha y hora */}
                     <div className="grid gap-2">
-                        <Label htmlFor="date_event">Fecha del evento</Label>
+                        <Label htmlFor="date_event">Fecha y hora del evento</Label>
                         <Input
                             id="date_event"
-                            type="date"
+                            type="datetime-local"
                             required
                             value={data.date_event}
                             onChange={(e) => setData('date_event', e.target.value)}
                         />
                         <InputError message={errors.date_event} />
                     </div>
+
 
                     {/* Ubicación */}
                     <div className="grid gap-2">

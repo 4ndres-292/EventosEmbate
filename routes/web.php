@@ -17,3 +17,4 @@ require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
 require __DIR__ . '/event.php';
 require __DIR__ . '/api.php';
+require __DIR__ . '/user.php';

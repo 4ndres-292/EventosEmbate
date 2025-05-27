@@ -53,14 +53,13 @@ class EventController extends Controller
         if ($request->hasFile('image_event')) {
             $image = $request->file('image_event');
 
-            // Generar nombre único para la imagen
             $imageName = Str::slug($request->name_event) . '-' . time() . '.' . $image->getClientOriginalExtension();
 
             // Guardar imagen en storage/app/public/events
-            $imagePath = $image->storeAs('public/events', $imageName);
+            $imagePath = $image->storeAs('events', $imageName, 'public');
 
             // Guardar ruta relativa en la base de datos
-            $validated['image_event'] = 'events/' . $imageName;
+            $validated['image_event'] = 'storage/events/' . $imageName;
         }
 
 
@@ -105,7 +104,7 @@ class EventController extends Controller
         if ($request->hasFile('image_event')) {
             $image = $request->file('image_event');
             $imageName = Str::slug($request->name_event) . '-' . time() . '.' . $image->getClientOriginalExtension();
-            $image->storeAs('public/events', $imageName);
+            $image->storeAs('app/public/events', $imageName);
             $validated['image_event'] = 'events/' . $imageName;
         }
 
@@ -142,4 +141,14 @@ class EventController extends Controller
             'eventos' => $eventos,
         ]);
     }
+
+    public function events_home()
+    {
+        $eventos = Event::orderBy('date_event', 'desc')->take(3)->get();
+
+        return Inertia::render('users/events', [
+            'eventos' => $eventos,
+        ]);
+    }
+
 }
