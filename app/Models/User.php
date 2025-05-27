@@ -57,4 +57,9 @@ class User extends Authenticatable
         return $this->belongsTo(TypeUser::class);
     }
 
+    public function events()
+    {
+        return $this->belongsToMany(Event::class, 'event_user');
+    }
+
 }

@@ -1,5 +1,5 @@
-import { Link } from '@inertiajs/react';
-import { Head } from '@inertiajs/react';
+import { useState } from 'react';
+import { Head, Link, router } from '@inertiajs/react';
 
 type Evento = {
     id: number;
@@ -14,13 +14,45 @@ interface Props {
 }
 
 export default function Events({ eventos }: Props) {
+    const [mensaje, setMensaje] = useState<string | null>(null);
+
+    const inscribirse = async (id: number) => {
+        try {
+            const response = await fetch(`/api/events/${id}/register`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement).content
+                },
+                credentials: 'same-origin'
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                setMensaje(`Inscripción exitosa. Usuario: ${data.email}`);
+            } else {
+                setMensaje('Error al inscribirse: ' + data.message);
+            }
+        } catch (error) {
+            setMensaje('Ocurrió un error en la conexión.');
+        }
+    };
+
     return (
         <>
             <Head title="Eventos disponibles" />
             <div className="min-h-screen bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-4xl mx-auto">
                     <h1 className="text-3xl font-bold text-center mb-8">Eventos disponibles</h1>
-                    
+
+                    {mensaje && (
+                        <div className="mb-6 text-center text-green-700 font-semibold">
+                            {mensaje}
+                        </div>
+                    )}
+
                     <div className="space-y-8">
                         {eventos.map((evento) => (
                             <div
@@ -46,12 +78,12 @@ export default function Events({ eventos }: Props) {
                                         >
                                             Ver más
                                         </Link>
-                                        <Link
-                                            href={`/event-register/${evento.id}`}
+                                        <button
+                                            onClick={() => inscribirse(evento.id)}
                                             className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
                                         >
                                             Inscribirme
-                                        </Link>
+                                        </button>
                                     </div>
                                 </div>
                             </div>

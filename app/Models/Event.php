@@ -13,4 +13,9 @@ class Event extends Model
 
     protected $fillable = ['name_event', 'description_event', 'image_event', 'date_event', 'owner', 'location',];
     protected $dates = ['deleted_at'];
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'event_user');
+    }
 }

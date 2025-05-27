@@ -150,5 +150,28 @@ class EventController extends Controller
             'eventos' => $eventos,
         ]);
     }
+    public function registerToEvent(Request $request, $eventId)
+    {
+        $user = auth()->user();
+        $user->events()->attach($eventId);
 
+        return response()->json(['message' => 'Usuario inscrito al evento correctamente']);
+    }
+
+    
+    public function register(Request $request, $id)
+        {
+            $user = $request->user();
+            $event = Event::findOrFail($id);
+
+            // Evitar duplicados
+            if (!$user->events->contains($event->id)) {
+                $user->events()->attach($event->id);
+            }
+
+            return response()->json([
+                'message' => 'Usuario inscrito correctamente',
+                'email' => $user->email
+            ]);
+        }
 }
