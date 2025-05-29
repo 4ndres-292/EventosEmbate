@@ -5,6 +5,15 @@ import { Menu } from 'lucide-react';
 import AppLogo from './app-logo';
 import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
+import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+} from '@/components/ui/dropdown-menu';
+import { UserMenuContent } from './user-menu-content'; // Ajusta si está en otra carpeta
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useInitials } from '@/hooks/use-initials';
+
 
 export function WelcomeHeader() {
     const { auth } = usePage<SharedData>().props;
@@ -56,28 +65,37 @@ export function WelcomeHeader() {
                                 ))}
                                 <div className="mt-auto space-y-2">
                                     {auth.user ? (
-                                        <Link
-                                            href="/dashboard"
-                                            className="block w-full px-4 py-2 text-center bg-blue-600 text-white rounded hover:bg-blue-700"
-                                        >
-                                            Dashboard
-                                        </Link>
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <button className="flex items-center gap-2 focus:outline-none">
+                                                    <Avatar className="h-8 w-8">
+                                                        <AvatarImage src={auth.user.avatar} alt={auth.user.name} />
+                                                        <AvatarFallback>{useInitials()(auth.user.name)}</AvatarFallback>
+                                                    </Avatar>
+                                                    <span className="hidden lg:inline-block font-medium">{auth.user.name}</span>
+                                                </button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end" className="w-56 mt-2">
+                                                <UserMenuContent user={auth.user} />
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
                                     ) : (
                                         <>
                                             <Link
                                                 href="/login"
-                                                className="block w-full px-4 py-2 text-center text-gray-600 hover:bg-gray-100 rounded"
+                                                className="px-4 py-2 text-gray-600 hover:text-blue-600 hidden lg:inline-block"
                                             >
                                                 Iniciar sesión
                                             </Link>
                                             <Link
                                                 href="/register"
-                                                className="block w-full px-4 py-2 text-center bg-blue-600 text-white rounded hover:bg-blue-700"
+                                                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 hidden lg:inline-block"
                                             >
                                                 Crear cuenta
                                             </Link>
                                         </>
                                     )}
+
                                 </div>
                             </div>
                         </SheetContent>
@@ -112,29 +130,38 @@ export function WelcomeHeader() {
 
                 {/* Botones de autenticación */}
                 <div className="ml-auto flex items-center gap-4">
-                    {auth.user ? (
+                                    {auth.user ? (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <button className="flex items-center gap-2 focus:outline-none">
+                                <Avatar className="h-8 w-8">
+                                    <AvatarImage src={auth.user.avatar} alt={auth.user.name} />
+                                    <AvatarFallback>{useInitials()(auth.user.name)}</AvatarFallback>
+                                </Avatar>
+                                <span className="hidden lg:inline-block font-medium">{auth.user.name}</span>
+                            </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-56 mt-2">
+                            <UserMenuContent user={auth.user} />
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                ) : (
+                    <>
                         <Link
-                            href="/dashboard"
+                            href="/login"
+                            className="px-4 py-2 text-gray-600 hover:text-blue-600 hidden lg:inline-block"
+                        >
+                            Iniciar sesión
+                        </Link>
+                        <Link
+                            href="/register"
                             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 hidden lg:inline-block"
                         >
-                            Dashboard
+                            Crear cuenta
                         </Link>
-                    ) : (
-                        <>
-                            <Link
-                                href="/login"
-                                className="px-4 py-2 text-gray-600 hover:text-blue-600 hidden lg:inline-block"
-                            >
-                                Iniciar sesión
-                            </Link>
-                            <Link
-                                href="/register"
-                                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 hidden lg:inline-block"
-                            >
-                                Crear cuenta
-                            </Link>
-                        </>
-                    )}
+                    </>
+                )}
+
                 </div>
             </div>
         </header>

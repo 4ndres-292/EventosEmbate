@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
+import { WelcomeHeader } from '@/components/welcome-header'; // Importa el nuevo componente
+import { WelcomeFooter } from '@/components/welcome-footer';
 
 type Evento = {
     id: number;
@@ -18,23 +20,10 @@ export default function Events({ eventos }: Props) {
 
     const inscribirse = async (id: number) => {
         try {
-            const response = await fetch(`/api/events/${id}/register`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement).content
-                },
-                credentials: 'same-origin'
+            router.post(`/events/${id}/register`, {}, {
+            onSuccess: () => setMensaje('Inscripción exitosa.'),
+            onError: (errors) => setMensaje('Error al inscribirse.'),
             });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                setMensaje(`Inscripción exitosa. Usuario: ${data.email}`);
-            } else {
-                setMensaje('Error al inscribirse: ' + data.message);
-            }
         } catch (error) {
             setMensaje('Ocurrió un error en la conexión.');
         }
@@ -43,6 +32,7 @@ export default function Events({ eventos }: Props) {
     return (
         <>
             <Head title="Eventos disponibles" />
+            <WelcomeHeader />
             <div className="min-h-screen bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-4xl mx-auto">
                     <h1 className="text-3xl font-bold text-center mb-8">Eventos disponibles</h1>
@@ -91,6 +81,7 @@ export default function Events({ eventos }: Props) {
                     </div>
                 </div>
             </div>
+            <WelcomeFooter />
         </>
     );
 }

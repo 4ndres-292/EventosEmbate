@@ -15,6 +15,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
   Route::put('/event-update/{event}', [EventController::class, 'update']);
   Route::delete('/event-delete/{event}', [EventController::class, 'destroy']);
   Route::get('/all-events', [EventController::class, 'all'])->name('event.all');
+  Route::post('/events/{id}/register', [EventController::class, 'register']);
 
-  Route::middleware('auth:sanctum')->post('/events/{id}/register', [EventController::class, 'register']);
 });

@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->string('phone')->default('')->after('password');
             $table->string('gender')->default('Masculino')->after('phone');
             $table->date('birthdate')->default(now())->after('gender');
-            $table->string('type_participant')->default(json_encode([]))->after('birthdate');
+            $table->string('type_participant')->default('')->after('birthdate');
             $table->string('career')->nullable()->after('type_participant');
             $table->string('institution')->default('')->after('career');
         });
