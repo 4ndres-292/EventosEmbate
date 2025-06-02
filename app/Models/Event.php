@@ -18,4 +18,9 @@ class Event extends Model
     {
         return $this->belongsToMany(User::class, 'event_user');
     }
+
+     public function user()
+    {
+        return $this->belongsTo(User::class, 'id_user'); // asegúrate que 'id_user' es la clave foránea correcta
+    }
 }

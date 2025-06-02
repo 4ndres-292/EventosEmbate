@@ -160,18 +160,62 @@ class EventController extends Controller
 
     
     public function register(Request $request, $id)
-        {
-            $user = $request->user();
-            $event = Event::findOrFail($id);
+{
+    $user = $request->user();
+    $event = Event::findOrFail($id);
 
-            // Evitar duplicados
-            if (!$user->events->contains($event->id)) {
-                $user->events()->attach($event->id);
-            }
+    // Evitar duplicados
+    if (!$user->events->contains($event->id)) {
+        $user->events()->attach($event->id);
+    }
 
-            return response()->json([
-                'message' => 'Usuario inscrito correctamente',
-                'email' => $user->email
-            ]);
+    // Redirige atrás con un mensaje en sesión
+    return redirect()->back()->with('success', 'Usuario inscrito correctamente');
+}
+        
+    public function getEventById($id)
+    {
+        $event = Event::with('user')->find($id);
+
+        if (!$event) {
+            return response()->json(['message' => 'Evento no encontrado'], 404);
         }
+
+        return response()->json($event);
+    }
+
+    // En EventController.php
+public function registeredUsers($eventId)
+{
+    $event = Event::with('users')->findOrFail($eventId);
+
+    return Inertia::render('admin/seeRegistered', [
+        'event' => $event,
+        'users' => $event->users,
+    ]);
+}
+
+public function search(Request $request)
+{
+    $query = Event::query();
+
+    // Filtro por nombre del evento (parcial)
+    if ($request->filled('name_event')) {
+        $query->where('name_event', 'like', '%' . $request->name_event . '%');
+    }
+
+    // Filtro por rango de fechas
+    if ($request->filled('start_date') && $request->filled('end_date')) {
+        $query->whereBetween('date_event', [$request->start_date, $request->end_date]);
+    }
+
+    $events = $query->with('user')->get();
+
+    return Inertia::render('admin/EventSearchResults', [
+        'events' => $events,
+        'filters' => $request->only(['name_event', 'start_date', 'end_date']),
+    ]);
+}
+
+
 }
