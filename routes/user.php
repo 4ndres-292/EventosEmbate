@@ -13,3 +13,9 @@ Route::get('/events/{id}/registered-users', [EventController::class, 'registered
     ->name('events.registeredUsers')
     ->middleware('auth');
 Route::get('/admin/eventos/buscar', [EventController::class, 'search'])->name('events.search');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/events/registered', [EventController::class, 'getRegisteredEvents']);
+    Route::post('/events/{id}/register', [EventController::class, 'register']);
+    Route::delete('/events/{id}/unregister', [EventController::class, 'unregister']);
+});

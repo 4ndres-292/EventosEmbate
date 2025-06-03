@@ -17,14 +17,19 @@ export function WelcomeHeader() {
     const { auth, url } = usePage<SharedData>().props;
 
     const navItemsAdmin = [
-        { title: 'Dashboard', href: '/admin/dashboard' },
-        { title: 'Usuarios', href: '/admin/users' },
-        { title: 'Reportes', href: '/admin/reports' },
+        { title: 'Inicio', href: '/' },
+        { title: 'Eventos', href: '/events' },
+        { title: 'Crear Evento', href: '/event-create' },
+        { title: 'Editar Evento', href: '/all-events' },
+        { title: 'Participantes del evento', href: '/events/1/registered-users' }
+
     ];
 
     const navItemsSupervisor = [
-        { title: 'Supervisión', href: '/supervisor/dashboard' },
-        { title: 'Actividades', href: '/supervisor/activities' },
+        { title: 'Inicio', href: '/' },
+        { title: 'Eventos', href: '/events' },
+        { title: 'Editar Evento', href: '/all-events' },
+        { title: 'Participantes del evento', href: '/events/1/registered-users' }
     ];
 
     const navItemsEstudiante = [
@@ -56,7 +61,7 @@ export function WelcomeHeader() {
                             <div className="flex h-full flex-col gap-4 pt-6">
                                 <Link href="/" className="mb-4 flex items-center">
                                     <img
-                                        src="public/images/logo_embate.png"
+                                        src="/public/events/logo_embate.png"
                                         alt="Logo"
                                         className="h-10 w-auto"
                                     />
@@ -99,7 +104,7 @@ export function WelcomeHeader() {
                 {/* Logo (desktop) */}
                 <Link href="/" className="hidden lg:flex items-center">
                     <img
-                        src="/public/images/logo_embate.png"
+                        src="/public/events/logo_embate.png"
                         alt="Logo"
                         className="h-10 w-auto"
                     />

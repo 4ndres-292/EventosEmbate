@@ -150,14 +150,6 @@ class EventController extends Controller
             'eventos' => $eventos,
         ]);
     }
-    public function registerToEvent(Request $request, $eventId)
-    {
-        $user = auth()->user();
-        $user->events()->attach($eventId);
-
-        return response()->json(['message' => 'Usuario inscrito al evento correctamente']);
-    }
-
     
     public function register(Request $request, $id)
 {
@@ -217,5 +209,24 @@ public function search(Request $request)
     ]);
 }
 
+public function isUserRegistered($eventId)
+{
+    $user = auth()->user();
+    return $user->events()->where('event_id', $eventId)->exists();
+}
+
+public function getRegisteredEvents()
+{
+    $user = auth()->user();
+    $eventIds = $user->events()->pluck('event_id'); // Obtener IDs
+    return response()->json($eventIds);
+}
+
+public function unregister($id)
+{
+    $user = auth()->user();
+    $user->events()->detach($id);
+    return response()->json(['message' => 'Desinscripción exitosa.']);
+}
 
 }
