@@ -2,7 +2,6 @@ import { Link, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Menu } from 'lucide-react';
-import AppLogo from './app-logo';
 import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
 import {
@@ -10,36 +9,40 @@ import {
     DropdownMenuTrigger,
     DropdownMenuContent,
 } from '@/components/ui/dropdown-menu';
-import { UserMenuContent } from './user-menu-content'; // Ajusta si está en otra carpeta
+import { UserMenuContent } from './user-menu-content';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useInitials } from '@/hooks/use-initials';
 
-
 export function WelcomeHeader() {
-    const { auth } = usePage<SharedData>().props;
+    const { auth, url } = usePage<SharedData>().props;
 
-    // Elementos de navegación
-    const navItems = [
-        {
-            title: 'Inicio',
-            href: '/',
-        },
-        {
-            title: 'Eventos',
-            href: '/events',
-        },
-        {
-            title: 'Servicios',
-            href: '/services',
-        },
-        {
-            title: '¿Quienes somos?',
-            href: '/whoWeAre',
-        },
+    const navItemsAdmin = [
+        { title: 'Dashboard', href: '/admin/dashboard' },
+        { title: 'Usuarios', href: '/admin/users' },
+        { title: 'Reportes', href: '/admin/reports' },
     ];
 
+    const navItemsSupervisor = [
+        { title: 'Supervisión', href: '/supervisor/dashboard' },
+        { title: 'Actividades', href: '/supervisor/activities' },
+    ];
+
+    const navItemsEstudiante = [
+        { title: 'Inicio', href: '/' },
+        { title: 'Eventos', href: '/events' },
+        { title: 'Servicios', href: '/services' },
+        { title: '¿Quienes somos?', href: '/whoWeAre' },
+    ];
+
+    let navItems = navItemsEstudiante; // por defecto
+
+    if (auth.user) {
+        if (auth.user.type_user_id === 1) navItems = navItemsAdmin;
+        else if (auth.user.type_user_id === 2) navItems = navItemsSupervisor;
+    }
+
     return (
-        <header className="border-b">
+        <header className="border-b bg-white">
             <div className="mx-auto flex h-16 items-center px-4 md:max-w-7xl">
                 {/* Menú móvil */}
                 <div className="lg:hidden">
@@ -51,8 +54,13 @@ export function WelcomeHeader() {
                         </SheetTrigger>
                         <SheetContent side="left" className="w-64">
                             <div className="flex h-full flex-col gap-4 pt-6">
-                                <Link href="/" className="mb-4">
-                                    <AppLogo />
+                                <Link href="/" className="mb-4 flex items-center">
+                                    <img
+                                        src="public/images/logo_embate.png"
+                                        alt="Logo"
+                                        className="h-10 w-auto"
+                                    />
+                                    <span className="ml-2 text-lg font-bold">Embate</span>
                                 </Link>
                                 {navItems.map((item) => (
                                     <Link
@@ -65,54 +73,40 @@ export function WelcomeHeader() {
                                 ))}
                                 <div className="mt-auto space-y-2">
                                     {auth.user ? (
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <button className="flex items-center gap-2 focus:outline-none">
-                                                    <Avatar className="h-8 w-8">
-                                                        <AvatarImage src={auth.user.avatar} alt={auth.user.name} />
-                                                        <AvatarFallback>{useInitials()(auth.user.name)}</AvatarFallback>
-                                                    </Avatar>
-                                                    <span className="hidden lg:inline-block font-medium">{auth.user.name}</span>
-                                                </button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end" className="w-56 mt-2">
-                                                <UserMenuContent user={auth.user} />
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
+                                        <UserDropdown user={auth.user} />
                                     ) : (
                                         <>
                                             <Link
                                                 href="/login"
-                                                className="px-4 py-2 text-gray-600 hover:text-blue-600 hidden lg:inline-block"
+                                                className="px-4 py-2 text-gray-600 hover:text-blue-600"
                                             >
                                                 Iniciar sesión
                                             </Link>
                                             <Link
                                                 href="/register"
-                                                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 hidden lg:inline-block"
+                                                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                                             >
                                                 Crear cuenta
                                             </Link>
                                         </>
                                     )}
-
                                 </div>
                             </div>
                         </SheetContent>
                     </Sheet>
                 </div>
 
-                {/* Logo */}
-                <Link href="/" className="flex items-center">
+                {/* Logo (desktop) */}
+                <Link href="/" className="hidden lg:flex items-center">
                     <img
-                        src="/storage/events/logo_embate.png"
+                        src="/public/images/logo_embate.png"
                         alt="Logo"
-                        className="h-8 w-auto"
+                        className="h-10 w-auto"
                     />
+                    <span className="ml-2 text-lg font-bold">Embate</span>
                 </Link>
 
-
-                {/* Navegación desktop */}
+                {/* Navegación (desktop) */}
                 <nav className="hidden lg:flex ml-8 space-x-6">
                     {navItems.map((item) => (
                         <Link
@@ -120,7 +114,7 @@ export function WelcomeHeader() {
                             href={item.href}
                             className={cn(
                                 'px-3 py-2 hover:text-blue-600 transition-colors',
-                                usePage().url === item.href && 'text-blue-600 font-medium'
+                                url === item.href && 'text-blue-600 font-medium'
                             )}
                         >
                             {item.title}
@@ -128,42 +122,50 @@ export function WelcomeHeader() {
                     ))}
                 </nav>
 
-                {/* Botones de autenticación */}
-                <div className="ml-auto flex items-center gap-4">
-                                    {auth.user ? (
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <button className="flex items-center gap-2 focus:outline-none">
-                                <Avatar className="h-8 w-8">
-                                    <AvatarImage src={auth.user.avatar} alt={auth.user.name} />
-                                    <AvatarFallback>{useInitials()(auth.user.name)}</AvatarFallback>
-                                </Avatar>
-                                <span className="hidden lg:inline-block font-medium">{auth.user.name}</span>
-                            </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-56 mt-2">
-                            <UserMenuContent user={auth.user} />
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                ) : (
-                    <>
-                        <Link
-                            href="/login"
-                            className="px-4 py-2 text-gray-600 hover:text-blue-600 hidden lg:inline-block"
-                        >
-                            Iniciar sesión
-                        </Link>
-                        <Link
-                            href="/register"
-                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 hidden lg:inline-block"
-                        >
-                            Crear cuenta
-                        </Link>
-                    </>
-                )}
-
+                {/* Usuario */}
+                <div className="ml-auto hidden lg:flex items-center gap-4">
+                    {auth.user ? (
+                        <UserDropdown user={auth.user} />
+                    ) : (
+                        <>
+                            <Link
+                                href="/login"
+                                className="px-4 py-2 text-gray-600 hover:text-blue-600"
+                            >
+                                Iniciar sesión
+                            </Link>
+                            <Link
+                                href="/register"
+                                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                            >
+                                Crear cuenta
+                            </Link>
+                        </>
+                    )}
                 </div>
             </div>
         </header>
+    );
+}
+
+// ✅ Componente auxiliar para el menú de usuario
+function UserDropdown({ user }: { user: SharedData['auth']['user'] }) {
+    const initials = useInitials()(user.name);
+
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-2 focus:outline-none">
+                    <Avatar className="h-8 w-8">
+                        <AvatarImage src={user.avatar} alt={user.name} />
+                        <AvatarFallback>{initials}</AvatarFallback>
+                    </Avatar>
+                    <span className="hidden lg:inline-block font-medium">{user.name}</span>
+                </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 mt-2">
+                <UserMenuContent user={user} />
+            </DropdownMenuContent>
+        </DropdownMenu>
     );
 }
