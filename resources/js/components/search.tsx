@@ -1,51 +1,61 @@
-import React, { useState } from 'react';
-import { router } from '@inertiajs/react';
+// resources/js/Components/Search.tsx
 
-export default function SearchEvent() {
-  const [filters, setFilters] = useState({
-    name_event: '',
-    start_date: '',
-    end_date: '',
-  });
+import React, { useState } from 'react'
+import { router } from '@inertiajs/react'
 
-  const handleSearch = () => {
-    router.get('/admin/eventos/buscar', filters);
-  };
+type Props = {
+  className?: string
+  routeName?: string
+}
+
+const Search: React.FC<Props> = ({ className = '', routeName = '/admin/eventos/buscar' }) => {
+  const [nameEvent, setNameEvent] = useState('')
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+
+    router.get(routeName, {
+      name_event: nameEvent,
+      start_date: startDate,
+      end_date: endDate,
+    })
+  }
 
   return (
-    <div className="p-4 bg-white rounded shadow">
-      <h2 className="text-lg font-semibold mb-4">Buscar Eventos</h2>
+    <form onSubmit={handleSearch} className={`flex flex-col gap-4 ${className}`}>
+      <input
+        type="text"
+        placeholder="Nombre del evento"
+        value={nameEvent}
+        onChange={(e) => setNameEvent(e.target.value)}
+        className="border p-2 rounded"
+      />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <input
-          type="text"
-          placeholder="Nombre del evento"
-          value={filters.name_event}
-          onChange={e => setFilters({ ...filters, name_event: e.target.value })}
-          className="border p-2 rounded"
-        />
-
+      <div className="flex gap-2">
         <input
           type="date"
-          value={filters.start_date}
-          onChange={e => setFilters({ ...filters, start_date: e.target.value })}
-          className="border p-2 rounded"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+          className="border p-2 rounded w-full"
         />
-
         <input
           type="date"
-          value={filters.end_date}
-          onChange={e => setFilters({ ...filters, end_date: e.target.value })}
-          className="border p-2 rounded"
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
+          className="border p-2 rounded w-full"
         />
       </div>
 
       <button
-        onClick={handleSearch}
-        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        type="submit"
+        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
       >
         Buscar
       </button>
-    </div>
-  );
+    </form>
+  )
 }
+
+export default Search

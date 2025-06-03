@@ -3,7 +3,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import { WelcomeHeader } from '@/components/welcome-header';
 import { WelcomeFooter } from '@/components/welcome-footer';
 import ModalConfirmation from '@/components/modalConfirmation';
-import ModalSuccess from '@/components/modalSuccess'; // Nuevo modal de éxito
+import ModalSuccess from '@/components/modalSuccess';
 import SeeMore from '@/pages/users/seeMore';
 
 type Evento = {
@@ -23,12 +23,13 @@ interface Props {
 export default function Events({ eventos }: Props) {
     const [showModal, setShowModal] = useState(false);
     const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
-
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
     const [showSeeMore, setShowSeeMore] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState<Evento | null>(null);
+
+    // Estado para el buscador
+    const [searchTerm, setSearchTerm] = useState('');
 
     const inscribirse = async (id: number) => {
         try {
@@ -46,6 +47,12 @@ export default function Events({ eventos }: Props) {
         }
     };
 
+    // Filtrado de eventos por nombre o descripción
+    const filteredEventos = eventos.filter((evento) =>
+        evento.name_event.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        evento.description_event.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     return (
         <>
             <Head title="Eventos disponibles" />
@@ -60,8 +67,20 @@ export default function Events({ eventos }: Props) {
                         </div>
                     )}
 
+                    {/* Campo de búsqueda */}
+                    <div className="mb-6">
+                        <input
+                            type="text"
+                            placeholder="Buscar evento..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full p-3 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        />
+                    </div>
+
+                    {/* Listado de eventos */}
                     <div className="space-y-8">
-                        {eventos.map((evento) => (
+                        {filteredEventos.map((evento) => (
                             <div
                                 key={evento.id}
                                 className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col md:flex-row items-center"
@@ -102,6 +121,9 @@ export default function Events({ eventos }: Props) {
                                 </div>
                             </div>
                         ))}
+                        {filteredEventos.length === 0 && (
+                            <p className="text-center text-gray-500">No se encontraron eventos que coincidan con la búsqueda.</p>
+                        )}
                     </div>
                 </div>
             </div>
