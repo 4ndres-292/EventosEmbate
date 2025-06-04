@@ -11,6 +11,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/auth-layout';
 
+import { WelcomeHeader } from '@/components/welcome-header';
+import { WelcomeFooter } from '@/components/welcome-footer';
+
 type EventForm = {
     name_event: string;
     description_event: string;
@@ -53,8 +56,11 @@ export default function EventCreate() {
     
 
     return (
+        
         <AuthLayout title="Crear un evento" description="Ingresa los datos para crear tu evento">
+           
             <Head title="Evento" />
+            
             <form 
                 className="flex flex-col gap-6" 
                 onSubmit={submit}
@@ -159,5 +165,6 @@ export default function EventCreate() {
                 </div>
             </form>
         </AuthLayout>
+        
     );
 }

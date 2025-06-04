@@ -144,12 +144,23 @@ class EventController extends Controller
 
     public function events_home()
     {
+        // 1. Obtener eventos (igual que antes)
         $eventos = Event::orderBy('date_event', 'desc')->take(3)->get();
 
+        // 2. Si hay usuario autenticado, obtener sus eventos inscritos
+        $inscritosIds = [];
+        if ($user = auth()->user()) {
+            // pluck('event_id') devuelve un Collection de IDs
+            $inscritosIds = $user->events()->pluck('event_id')->toArray();
+        }
+
+        // 3. Enviamos ambos (eventos + inscritos)
         return Inertia::render('users/events', [
-            'eventos' => $eventos,
+            'eventos'     => $eventos,
+            'inscritos'   => $inscritosIds,
         ]);
     }
+
     
     public function register(Request $request, $id)
 {
@@ -163,6 +174,7 @@ class EventController extends Controller
 
     // Redirige atrás con un mensaje en sesión
     return redirect()->back()->with('success', 'Usuario inscrito correctamente');
+    router.reload();
 }
         
     public function getEventById($id)
@@ -226,7 +238,8 @@ public function unregister($id)
 {
     $user = auth()->user();
     $user->events()->detach($id);
-    return response()->json(['message' => 'Desinscripción exitosa.']);
+    return redirect()->back()->with('success', 'Usuario desinscrito correctamente');
+    router.reload();
 }
 
 }

@@ -5,6 +5,7 @@ import { WelcomeFooter } from '@/components/welcome-footer';
 import ModalSuccess from '@/components/modalSuccess';
 import SeeMore from '@/pages/users/seeMore';
 
+
 type Evento = {
     id: number;
     name_event: string;
@@ -17,7 +18,7 @@ type Evento = {
 
 interface Props {
     eventos: Evento[];
-    inscritos: number[];
+    inscritos: number[]; // recibe array de IDs de eventos inscritos
 }
 
 export default function Events({ eventos, inscritos = [] }: Props) {
@@ -26,12 +27,14 @@ export default function Events({ eventos, inscritos = [] }: Props) {
     const [showSeeMore, setShowSeeMore] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState<Evento | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
+    // Inicializamos el estado con la prop "inscritos"
     const [inscritosIds, setInscritosIds] = useState<number[]>(inscritos);
     const [loadingIds, setLoadingIds] = useState<number[]>([]);
 
     const inscribirse = async (id: number) => {
         await router.post(`/events/${id}/register`, {}, {
             onSuccess: () => {
+                // Cuando se inscribe con éxito, agrego el ID al estado
                 setInscritosIds((prev) => [...prev, id]);
                 setShowSuccessModal(true);
                 setErrorMessage(null);
@@ -45,6 +48,7 @@ export default function Events({ eventos, inscritos = [] }: Props) {
     const desinscribirse = async (id: number) => {
         await router.delete(`/events/${id}/unregister`, {
             onSuccess: () => {
+                // Al desinscribirse, quito ese ID del estado
                 setInscritosIds((prev) => prev.filter((eid) => eid !== id));
                 setShowSuccessModal(true);
                 setErrorMessage(null);
