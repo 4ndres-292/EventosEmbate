@@ -56,9 +56,10 @@ export default function EventCreate() {
     
 
     return (
-        
+    <>
+        <WelcomeHeader/> 
         <AuthLayout title="Crear un evento" description="Ingresa los datos para crear tu evento">
-           
+            
             <Head title="Evento" />
             
             <form 
@@ -165,6 +166,7 @@ export default function EventCreate() {
                 </div>
             </form>
         </AuthLayout>
-        
+        {/*<WelcomeFooter/>*/}
+    </>
     );
 }

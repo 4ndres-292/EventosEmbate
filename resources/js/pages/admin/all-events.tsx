@@ -1,6 +1,8 @@
 import { Link } from '@inertiajs/react';
 import { Head } from '@inertiajs/react';
 import { router } from '@inertiajs/react';
+import { WelcomeHeader } from '@/components/welcome-header';
+import { WelcomeFooter } from '@/components/welcome-footer';
 
 type Evento = {
     id: number;
@@ -26,6 +28,7 @@ export default function AllEvents({ eventos }: Props) {
     return (
         <>
             <Head title="Todos los Eventos" />
+            <WelcomeHeader />
             <div className="p-6">
                 <h1 className="text-2xl font-bold mb-4">Todos los Eventos</h1>
 
@@ -78,6 +81,7 @@ export default function AllEvents({ eventos }: Props) {
                     </table>
                 </div>
             </div>
+            {/*<WelcomeFooter/>*/}
         </>
     );
 }
