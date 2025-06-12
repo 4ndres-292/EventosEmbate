@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -23,6 +24,7 @@ class EventController extends Controller
         return Inertia::render('admin/EventList', [
             'events' => $events,
         ]);
+
     }
 
     /**
@@ -62,10 +64,12 @@ class EventController extends Controller
             $validated['image_event'] = 'storage/events/' . $imageName;
         }
 
-
-        $event = Event::create($validated);
-
-        return response()->json(['message' => 'Evento creado con éxito', 'event' => $event], 201);
+        try {
+            $event = Event::create($validated);
+            return Redirect::route('home')->with('success', 'Evento creado con éxito');
+        } catch (\Exception $e) {
+            return Redirect::back()->with('error', 'Ocurrió un error al crear el evento');
+        }
     }
 
     /**
@@ -90,30 +94,38 @@ class EventController extends Controller
      * Update the specified resource in storage.
      */
     public function update(Request $request, Event $event)
-    {
-        // Validación
-        $validated = $request->validate([
-            'name_event' => 'required|string|max:255',
-            'description_event' => 'required|string',
-            'image_event' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'date_event' => 'required|date',
-            'location' => 'required|string'
-        ]);
+{
+    // Validar sin imagen
+    $rules = [
+        'name_event' => 'required|string|max:255',
+        'description_event' => 'required|string',
+        'date_event' => 'required|date',
+        'location' => 'required|string',
+    ];
 
-        // Actualizar la imagen si es que se sube una nueva
-        if ($request->hasFile('image_event')) {
-            $image = $request->file('image_event');
-            $imageName = Str::slug($request->name_event) . '-' . time() . '.' . $image->getClientOriginalExtension();
-            $image->storeAs('app/public/events', $imageName);
-            $validated['image_event'] = 'events/' . $imageName;
-        }
-
-        // Actualizar el evento
-        $validated['edited_by'] = Auth::user()->email;
-        $event->update($validated);
-
-        return response()->json(['message' => 'Evento actualizado con éxito', 'event' => $event], 200);
+    // Si se sube una imagen nueva, agregar validación de imagen
+    if ($request->hasFile('image_event')) {
+        $rules['image_event'] = 'image|mimes:jpeg,png,jpg,gif|max:2048';
     }
+
+    $validated = $request->validate($rules);
+
+    // Manejo de la imagen
+    if ($request->hasFile('image_event')) {
+        $image = $request->file('image_event');
+        $imageName = Str::slug($request->name_event) . '-' . time() . '.' . $image->getClientOriginalExtension();
+        $image->storeAs('events', $imageName, 'public');
+        $validated['image_event'] = 'storage/events/' . $imageName;
+    }
+
+    $validated['edited_by'] = Auth::user()->email;
+    $event->update($validated);
+
+    return response()->json(['message' => 'Evento actualizado con éxito', 'event' => $event], 200);
+}
+
+
+
 
     /**
      * Remove the specified resource from storage.
@@ -156,27 +168,27 @@ class EventController extends Controller
 
         // 3. Enviamos ambos (eventos + inscritos)
         return Inertia::render('users/events', [
-            'eventos'     => $eventos,
-            'inscritos'   => $inscritosIds,
+            'eventos' => $eventos,
+            'inscritos' => $inscritosIds,
         ]);
     }
 
-    
-    public function register(Request $request, $id)
-{
-    $user = $request->user();
-    $event = Event::findOrFail($id);
 
-    // Evitar duplicados
-    if (!$user->events->contains($event->id)) {
-        $user->events()->attach($event->id);
+    public function register(Request $request, $id)
+    {
+        $user = $request->user();
+        $event = Event::findOrFail($id);
+
+        // Evitar duplicados
+        if (!$user->events->contains($event->id)) {
+            $user->events()->attach($event->id);
+        }
+
+        // Redirige atrás con un mensaje en sesión
+        return redirect()->back()->with('success', 'Usuario inscrito correctamente');
+        router . reload();
     }
 
-    // Redirige atrás con un mensaje en sesión
-    return redirect()->back()->with('success', 'Usuario inscrito correctamente');
-    router.reload();
-}
-        
     public function getEventById($id)
     {
         $event = Event::with('user')->find($id);
@@ -189,57 +201,57 @@ class EventController extends Controller
     }
 
     // En EventController.php
-public function registeredUsers($eventId)
-{
-    $event = Event::with('users')->findOrFail($eventId);
+    public function registeredUsers($eventId)
+    {
+        $event = Event::with('users')->findOrFail($eventId);
 
-    return Inertia::render('admin/seeRegistered', [
-        'event' => $event,
-        'users' => $event->users,
-    ]);
-}
-
-public function search(Request $request)
-{
-    $query = Event::query();
-
-    // Filtro por nombre del evento (parcial)
-    if ($request->filled('name_event')) {
-        $query->where('name_event', 'like', '%' . $request->name_event . '%');
+        return Inertia::render('admin/seeRegistered', [
+            'event' => $event,
+            'users' => $event->users,
+        ]);
     }
 
-    // Filtro por rango de fechas
-    if ($request->filled('start_date') && $request->filled('end_date')) {
-        $query->whereBetween('date_event', [$request->start_date, $request->end_date]);
+    public function search(Request $request)
+    {
+        $query = Event::query();
+
+        // Filtro por nombre del evento (parcial)
+        if ($request->filled('name_event')) {
+            $query->where('name_event', 'like', '%' . $request->name_event . '%');
+        }
+
+        // Filtro por rango de fechas
+        if ($request->filled('start_date') && $request->filled('end_date')) {
+            $query->whereBetween('date_event', [$request->start_date, $request->end_date]);
+        }
+
+        $events = $query->with('user')->get();
+
+        return Inertia::render('admin/EventSearchResults', [
+            'events' => $events,
+            'filters' => $request->only(['name_event', 'start_date', 'end_date']),
+        ]);
     }
 
-    $events = $query->with('user')->get();
+    public function isUserRegistered($eventId)
+    {
+        $user = auth()->user();
+        return $user->events()->where('event_id', $eventId)->exists();
+    }
 
-    return Inertia::render('admin/EventSearchResults', [
-        'events' => $events,
-        'filters' => $request->only(['name_event', 'start_date', 'end_date']),
-    ]);
-}
+    public function getRegisteredEvents()
+    {
+        $user = auth()->user();
+        $eventIds = $user->events()->pluck('event_id'); // Obtener IDs
+        return response()->json($eventIds);
+    }
 
-public function isUserRegistered($eventId)
-{
-    $user = auth()->user();
-    return $user->events()->where('event_id', $eventId)->exists();
-}
-
-public function getRegisteredEvents()
-{
-    $user = auth()->user();
-    $eventIds = $user->events()->pluck('event_id'); // Obtener IDs
-    return response()->json($eventIds);
-}
-
-public function unregister($id)
-{
-    $user = auth()->user();
-    $user->events()->detach($id);
-    return redirect()->back()->with('success', 'Usuario desinscrito correctamente');
-    router.reload();
-}
+    public function unregister($id)
+    {
+        $user = auth()->user();
+        $user->events()->detach($id);
+        return redirect()->back()->with('success', 'Usuario desinscrito correctamente');
+        router . reload();
+    }
 
 }

@@ -44,7 +44,7 @@ export default function EventCreate() {
     useEffect(() => {
         const fetchLocations = async () => {
             try {
-                const response = await axios.get('api/locations');
+                const response = await axios.get('/api/locations');
                 setLocations(response.data.map((loc: { name: string }) => loc.name));
             } catch (error) {
                 console.error("Error al cargar ubicaciones", error);

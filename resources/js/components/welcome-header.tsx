@@ -61,7 +61,7 @@ export function WelcomeHeader() {
                             <div className="flex h-full flex-col gap-4 pt-6">
                                 <Link href="/" className="mb-4 flex items-center">
                                     <img
-                                        src="/public/events/logo_embate.png"
+                                        src="/storage/app/public/logo_embate.png"
                                         alt="Logo"
                                         className="h-10 w-auto"
                                     />
@@ -104,7 +104,7 @@ export function WelcomeHeader() {
                 {/* Logo (desktop) */}
                 <Link href="/" className="hidden lg:flex items-center">
                     <img
-                        src="/public/events/logo_embate.png"
+                        src="/storage/logo_embate.png"
                         alt="Logo"
                         className="h-10 w-auto"
                     />
