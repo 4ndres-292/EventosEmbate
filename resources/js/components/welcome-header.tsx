@@ -21,15 +21,18 @@ export function WelcomeHeader() {
         { title: 'Eventos', href: '/events' },
         { title: 'Crear Evento', href: '/event-create' },
         { title: 'Editar Evento', href: '/all-events' },
-        { title: 'Participantes del evento', href: '/events/1/registered-users' }
-
+        { title: 'Dar permisos', href: '/admin/grant-permits' },
+        { title: 'Servicios', href: '/services' },
+        { title: '¿Quienes somos?', href: '/whoWeAre' },
     ];
 
     const navItemsSupervisor = [
         { title: 'Inicio', href: '/' },
         { title: 'Eventos', href: '/events' },
         { title: 'Editar Evento', href: '/all-events' },
-        { title: 'Participantes del evento', href: '/events/1/registered-users' }
+        { title: 'Participantes del evento', href: '/events/1/registered-users' },
+        { title: 'Servicios', href: '/services' },
+        { title: '¿Quienes somos?', href: '/whoWeAre' },
     ];
 
     const navItemsEstudiante = [
@@ -39,7 +42,7 @@ export function WelcomeHeader() {
         { title: '¿Quienes somos?', href: '/whoWeAre' },
     ];
 
-    let navItems = navItemsEstudiante; // por defecto
+    let navItems = navItemsEstudiante;
 
     if (auth.user) {
         if (auth.user.type_user_id === 1) navItems = navItemsAdmin;
@@ -47,7 +50,7 @@ export function WelcomeHeader() {
     }
 
     return (
-        <header className="border-b bg-white">
+        <header className="border-b bg-white dark:bg-gray-900 dark:border-gray-700">
             <div className="mx-auto flex h-16 items-center px-4 md:max-w-7xl">
                 {/* Menú móvil */}
                 <div className="lg:hidden">
@@ -57,7 +60,10 @@ export function WelcomeHeader() {
                                 <Menu className="h-5 w-5" />
                             </Button>
                         </SheetTrigger>
-                        <SheetContent side="left" className="w-64">
+                        <SheetContent
+                            side="left"
+                            className="w-64 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                        >
                             <div className="flex h-full flex-col gap-4 pt-6">
                                 <Link href="/" className="mb-4 flex items-center">
                                     <img
@@ -67,15 +73,17 @@ export function WelcomeHeader() {
                                     />
                                     <span className="ml-2 text-lg font-bold">Embate</span>
                                 </Link>
+
                                 {navItems.map((item) => (
                                     <Link
                                         key={item.title}
                                         href={item.href}
-                                        className="px-4 py-2 hover:bg-gray-100 rounded"
+                                        className="px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
                                     >
                                         {item.title}
                                     </Link>
                                 ))}
+
                                 <div className="mt-auto space-y-2">
                                     {auth.user ? (
                                         <UserDropdown user={auth.user} />
@@ -83,7 +91,7 @@ export function WelcomeHeader() {
                                         <>
                                             <Link
                                                 href="/login"
-                                                className="px-4 py-2 text-gray-600 hover:text-blue-600"
+                                                className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
                                             >
                                                 Iniciar sesión
                                             </Link>
@@ -108,7 +116,9 @@ export function WelcomeHeader() {
                         alt="Logo"
                         className="h-10 w-auto"
                     />
-                    <span className="ml-2 text-lg font-bold">Embate</span>
+                    <span className="ml-2 text-lg font-bold text-gray-900 dark:text-white">
+                        Embate
+                    </span>
                 </Link>
 
                 {/* Navegación (desktop) */}
@@ -118,8 +128,8 @@ export function WelcomeHeader() {
                             key={item.title}
                             href={item.href}
                             className={cn(
-                                'px-3 py-2 hover:text-blue-600 transition-colors',
-                                url === item.href && 'text-blue-600 font-medium'
+                                'px-3 py-2 transition-colors hover:text-blue-600 dark:hover:text-blue-400 text-gray-700 dark:text-gray-200',
+                                url === item.href && 'text-blue-600 dark:text-blue-400 font-medium'
                             )}
                         >
                             {item.title}
@@ -135,7 +145,7 @@ export function WelcomeHeader() {
                         <>
                             <Link
                                 href="/login"
-                                className="px-4 py-2 text-gray-600 hover:text-blue-600"
+                                className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
                             >
                                 Iniciar sesión
                             </Link>
@@ -153,7 +163,6 @@ export function WelcomeHeader() {
     );
 }
 
-// ✅ Componente auxiliar para el menú de usuario
 function UserDropdown({ user }: { user: SharedData['auth']['user'] }) {
     const initials = useInitials()(user.name);
 
@@ -165,10 +174,15 @@ function UserDropdown({ user }: { user: SharedData['auth']['user'] }) {
                         <AvatarImage src={user.avatar} alt={user.name} />
                         <AvatarFallback>{initials}</AvatarFallback>
                     </Avatar>
-                    <span className="hidden lg:inline-block font-medium">{user.name}</span>
+                    <span className="hidden lg:inline-block font-medium text-gray-800 dark:text-gray-100">
+                        {user.name}
+                    </span>
                 </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 mt-2">
+            <DropdownMenuContent
+                align="end"
+                className="w-56 mt-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+            >
                 <UserMenuContent user={user} />
             </DropdownMenuContent>
         </DropdownMenu>

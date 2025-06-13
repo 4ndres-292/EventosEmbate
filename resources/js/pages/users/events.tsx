@@ -5,7 +5,6 @@ import { WelcomeFooter } from '@/components/welcome-footer';
 import ModalSuccess from '@/components/modalSuccess';
 import SeeMore from '@/pages/users/seeMore';
 
-
 type Evento = {
     id: number;
     name_event: string;
@@ -27,35 +26,28 @@ export default function Events({ eventos, inscritos = [] }: Props) {
     const [showSeeMore, setShowSeeMore] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState<Evento | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
-    // Inicializamos el estado con la prop "inscritos"
     const [inscritosIds, setInscritosIds] = useState<number[]>(inscritos);
     const [loadingIds, setLoadingIds] = useState<number[]>([]);
 
     const inscribirse = async (id: number) => {
         await router.post(`/events/${id}/register`, {}, {
             onSuccess: () => {
-                // Cuando se inscribe con éxito, agrego el ID al estado
                 setInscritosIds((prev) => [...prev, id]);
                 setShowSuccessModal(true);
                 setErrorMessage(null);
             },
-            onError: () => {
-                setErrorMessage('Error al inscribirse.');
-            },
+            onError: () => setErrorMessage('Error al inscribirse.'),
         });
     };
 
     const desinscribirse = async (id: number) => {
         await router.delete(`/events/${id}/unregister`, {
             onSuccess: () => {
-                // Al desinscribirse, quito ese ID del estado
                 setInscritosIds((prev) => prev.filter((eid) => eid !== id));
                 setShowSuccessModal(true);
                 setErrorMessage(null);
             },
-            onError: () => {
-                setErrorMessage('Error al desinscribirse.');
-            },
+            onError: () => setErrorMessage('Error al desinscribirse.'),
         });
     };
 
@@ -82,9 +74,11 @@ export default function Events({ eventos, inscritos = [] }: Props) {
             <Head title="Eventos disponibles" />
             <WelcomeHeader />
 
-            <div className="min-h-screen bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+            <div className="min-h-screen bg-white dark:bg-black py-12 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-4xl mx-auto">
-                    <h1 className="text-3xl font-bold text-center mb-8">Eventos disponibles</h1>
+                    <h1 className="text-3xl font-bold text-center mb-8 text-gray-800 dark:text-white">
+                        Eventos disponibles
+                    </h1>
 
                     {errorMessage && (
                         <div className="mb-6 text-center text-red-600 font-semibold">
@@ -98,7 +92,7 @@ export default function Events({ eventos, inscritos = [] }: Props) {
                             placeholder="Buscar evento..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full p-3 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            className="w-full p-3 border rounded shadow-sm bg-white dark:bg-gray-800 dark:text-white dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
                         />
                     </div>
 
@@ -110,7 +104,7 @@ export default function Events({ eventos, inscritos = [] }: Props) {
                             return (
                                 <div
                                     key={evento.id}
-                                    className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col md:flex-row items-center"
+                                    className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden flex flex-col md:flex-row items-center"
                                 >
                                     {evento.image_event && (
                                         <img
@@ -121,10 +115,10 @@ export default function Events({ eventos, inscritos = [] }: Props) {
                                     )}
 
                                     <div className="p-6 flex-1 flex flex-col items-center md:items-start">
-                                        <h2 className="text-2xl font-semibold mb-2 text-center md:text-left">
+                                        <h2 className="text-2xl font-semibold mb-2 text-center md:text-left text-gray-800 dark:text-white">
                                             {evento.name_event}
                                         </h2>
-                                        <p className="text-gray-600 mb-4 text-center md:text-left">
+                                        <p className="text-gray-600 dark:text-gray-300 mb-4 text-center md:text-left">
                                             {evento.description_event}
                                         </p>
                                         <div className="flex gap-4 flex-wrap justify-center md:justify-start">
@@ -153,8 +147,8 @@ export default function Events({ eventos, inscritos = [] }: Props) {
                                                 {isLoading
                                                     ? 'Procesando...'
                                                     : yaInscrito
-                                                    ? 'Inscrito (Cancelar)'
-                                                    : 'Inscribirme'}
+                                                        ? 'Inscrito (Cancelar)'
+                                                        : 'Inscribirme'}
                                             </button>
                                         </div>
                                     </div>
@@ -163,7 +157,7 @@ export default function Events({ eventos, inscritos = [] }: Props) {
                         })}
 
                         {filteredEventos.length === 0 && (
-                            <p className="text-center text-gray-500">
+                            <p className="text-center text-gray-500 dark:text-gray-300">
                                 No se encontraron eventos que coincidan con la búsqueda.
                             </p>
                         )}

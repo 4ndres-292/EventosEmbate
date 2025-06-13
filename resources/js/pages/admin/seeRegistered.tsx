@@ -25,41 +25,68 @@ export default function SeeRegistered() {
     <>
       <Head title="Ver registrados" />
       <WelcomeHeader />
-      <div className="p-4">
-        <h1 className="text-2xl font-bold mb-4">
+      <div className="p-6 max-w-5xl mx-auto">
+        <h1 className="text-3xl font-extrabold mb-6 text-gray-900 dark:text-gray-100">
           Usuarios registrados en: {event.name_event}
         </h1>
 
-        <table className="w-full table-auto border">
-          <thead>
-            <tr className="bg-gray-200">
-              <th className="border px-4 py-2">Nombre</th>
-              <th className="border px-4 py-2">Correo</th>
-              <th className="border px-4 py-2">Celular</th>
-              <th className="border px-4 py-2">Género</th>
-              <th className="border px-4 py-2">Tipo de Participante</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.length > 0 ? (
-              users.map((user) => (
-                <tr key={user.id}>
-                  <td className="border px-4 py-2">{user.name}</td>
-                  <td className="border px-4 py-2">{user.email}</td>
-                  <td className="border px-4 py-2">{user.phone}</td>
-                  <td className="border px-4 py-2">{user.gender}</td>
-                  <td className="border px-4 py-2">{user.type_participant}</td>
-                </tr>
-              ))
-            ) : (
+        <div className="overflow-x-auto rounded-lg shadow-lg border border-gray-300 dark:border-gray-700">
+          <table className="w-full table-auto border-collapse text-gray-800 dark:text-gray-200">
+            <thead className="bg-gray-200 dark:bg-gray-800">
               <tr>
-                <td colSpan={6} className="text-center p-4">
-                  No hay usuarios registrados.
-                </td>
+                {[
+                  'Nombre',
+                  'Correo',
+                  'Celular',
+                  'Género',
+                  'Tipo de Participante',
+                ].map((header) => (
+                  <th
+                    key={header}
+                    className="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left text-sm font-semibold"
+                  >
+                    {header}
+                  </th>
+                ))}
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="bg-white dark:bg-gray-900">
+              {users.length > 0 ? (
+                users.map((user) => (
+                  <tr
+                    key={user.id}
+                    className="hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-150"
+                  >
+                    <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-sm">
+                      {user.name}
+                    </td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-sm break-words max-w-xs">
+                      {user.email}
+                    </td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-sm">
+                      {user.phone}
+                    </td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-sm">
+                      {user.gender}
+                    </td>
+                    <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-sm">
+                      {user.type_participant}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="text-center p-6 text-gray-600 dark:text-gray-400 italic"
+                  >
+                    No hay usuarios registrados.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
       {/* <WelcomeFooter /> */}
     </>
