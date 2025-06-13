@@ -11,6 +11,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
+import { WelcomeHeader } from '@/components/welcome-header';
+import { WelcomeFooter } from '@/components/welcome-footer';
+
+
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Configuración de contraseña',
@@ -49,7 +53,8 @@ export default function Password() {
     };
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <>
+        <WelcomeHeader/>
             <Head title="Configuración de contraseña" />
 
             <SettingsLayout>
@@ -123,6 +128,6 @@ export default function Password() {
                     </form>
                 </div>
             </SettingsLayout>
-        </AppLayout>
+        </>
     );
 }

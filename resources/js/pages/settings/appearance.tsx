@@ -7,6 +7,9 @@ import { type BreadcrumbItem } from '@/types';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 
+import { WelcomeHeader } from '@/components/welcome-header';
+import { WelcomeFooter } from '@/components/welcome-footer';
+
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Configuración de apariencia',
@@ -16,7 +19,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function Appearance() {
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <>
+        <WelcomeHeader/>
             <Head title="Configuración de apariencia" />
 
             <SettingsLayout>
@@ -25,6 +29,6 @@ export default function Appearance() {
                     <AppearanceTabs />
                 </div>
             </SettingsLayout>
-        </AppLayout>
+        </>
     );
 }

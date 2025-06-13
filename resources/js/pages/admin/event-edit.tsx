@@ -1,4 +1,4 @@
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, router } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import { LoaderCircle } from 'lucide-react';
 import { FormEventHandler } from 'react';
@@ -8,6 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/auth-layout';
 import axios from 'axios';
+import { WelcomeHeader } from '@/components/welcome-header';
+import { WelcomeFooter } from '@/components/welcome-footer';
 
 type EventForm = {
     name_event: string;
@@ -69,6 +71,8 @@ export default function EventEdit({ event }: Props) {
     };
 
     return (
+        <>
+        <WelcomeHeader/> 
         <AuthLayout title="Editar evento" description="Modifica los datos del evento">
             <Head title="Editar Evento" />
             <form
@@ -158,7 +162,7 @@ export default function EventEdit({ event }: Props) {
                         <Button 
                             type="button" 
                             variant="outline" 
-                            onClick={() => reset()}
+                            onClick={() => router.visit('/')}
                         >
                             Cancelar
                         </Button>
@@ -173,6 +177,7 @@ export default function EventEdit({ event }: Props) {
                 </div>
             </form>
         </AuthLayout>
+        </>
     );
 }
 

@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Event\EventController;
 use App\Http\Controllers\Event\InformationController;
+use App\Http\Controllers\UserController;
+
 use Inertia\Inertia;
 
 Route::get('/events', [EventController::class, 'events_home'])->name('events');
@@ -18,4 +20,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/events/registered', [EventController::class, 'getRegisteredEvents']);
     Route::post('/events/{id}/register', [EventController::class, 'register']);
     Route::delete('/events/{id}/unregister', [EventController::class, 'unregister']);
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/admin/grant-permits', [UserController::class, 'index']); // vista principal
+    Route::get('/users/search', [UserController::class, 'searchByEmail']); // búsqueda ajax
+    Route::post('/users/update-role', [UserController::class, 'updateRole']); // actualización rol
 });

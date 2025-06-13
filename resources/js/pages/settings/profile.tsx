@@ -9,8 +9,12 @@ import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import AppLayout from '@/layouts/app-layout';
+//import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
+import { WelcomeHeader } from '@/components/welcome-header';
+import { WelcomeFooter } from '@/components/welcome-footer';
+
+
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -86,7 +90,8 @@ const handleSelectCareer = (career: string) => {
 ///
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <>
+        <WelcomeHeader/>
             <Head title="Configuración del perfil" />
 
             <SettingsLayout>
@@ -274,6 +279,6 @@ const handleSelectCareer = (career: string) => {
 
                 <DeleteUser />
             </SettingsLayout>
-        </AppLayout>
+        </>
     );
 }

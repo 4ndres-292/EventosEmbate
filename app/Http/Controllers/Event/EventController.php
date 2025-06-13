@@ -93,9 +93,8 @@ class EventController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Event $event)
+public function update(Request $request, Event $event)
 {
-    // Validar sin imagen
     $rules = [
         'name_event' => 'required|string|max:255',
         'description_event' => 'required|string',
@@ -103,14 +102,12 @@ class EventController extends Controller
         'location' => 'required|string',
     ];
 
-    // Si se sube una imagen nueva, agregar validación de imagen
     if ($request->hasFile('image_event')) {
         $rules['image_event'] = 'image|mimes:jpeg,png,jpg,gif|max:2048';
     }
 
     $validated = $request->validate($rules);
 
-    // Manejo de la imagen
     if ($request->hasFile('image_event')) {
         $image = $request->file('image_event');
         $imageName = Str::slug($request->name_event) . '-' . time() . '.' . $image->getClientOriginalExtension();
@@ -119,9 +116,13 @@ class EventController extends Controller
     }
 
     $validated['edited_by'] = Auth::user()->email;
-    $event->update($validated);
 
-    return response()->json(['message' => 'Evento actualizado con éxito', 'event' => $event], 200);
+    try {
+        $event->update($validated);
+        return Redirect::route('home')->with('success', 'Evento actualizado con éxito');
+    } catch (\Exception $e) {
+        return Redirect::back()->with('error', 'Ocurrió un error al actualizar el evento');
+    }
 }
 
 
@@ -130,21 +131,27 @@ class EventController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Event $event)
-    {
+public function destroy(Event $event)
+{
+    try {
         // Eliminar la imagen del servidor si existe
         if ($event->image_event) {
             Storage::delete('public/' . $event->image_event);
         }
 
-        // Eliminar el evento
+        // Guardar quién lo eliminó
         $event->deleted_by = Auth::user()->email;
         $event->save();
 
-        $event->delete(); // Soft delete
+        // Soft delete
+        $event->delete();
 
-        return response()->json(['message' => 'Evento eliminado con éxito']);
+        return Redirect::route('home')->with('success', 'Evento eliminado con éxito');
+    } catch (\Exception $e) {
+        return Redirect::back()->with('error', 'Ocurrió un error al eliminar el evento');
     }
+}
+
 
     public function all()
     {
@@ -253,5 +260,20 @@ class EventController extends Controller
         return redirect()->back()->with('success', 'Usuario desinscrito correctamente');
         router . reload();
     }
+
+public function verRegistrados($id)
+{
+    // Obtener el evento por su ID
+    $event = Event::findOrFail($id);
+
+    // Obtener los usuarios registrados al evento (ajusta la relación según tu modelo)
+    $users = $event->users()->select('users.id', 'users.name', 'users.email', 'users.phone', 'users.gender', 'users.type_participant')->get();
+
+    return Inertia::render('SeeRegistered', [
+        'event' => $event,
+        'users' => $users,
+    ]);
+}
+
 
 }
