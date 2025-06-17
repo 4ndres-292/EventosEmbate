@@ -67,9 +67,9 @@ export function WelcomeHeader() {
                             <div className="flex h-full flex-col gap-4 pt-6">
                                 <Link href="/" className="mb-4 flex items-center">
                                     <img
-                                        src="/storage/app/public/logo_embate.png"
+                                        src="/storage/logo_embate.png"
                                         alt="Logo"
-                                        className="h-10 w-auto"
+                                        className="h-20 w-auto"
                                     />
                                     <span className="ml-2 text-lg font-bold">Embate</span>
                                 </Link>

@@ -20,7 +20,7 @@ class EventController extends Controller
      */
     public function index()
     {
-        $events = Event::with('user')->get(); // si quieres incluir el propietario (relación)
+        $events = Event::with('schedules', 'users')->get(); // si quieres incluir el propietario (relación)
         return Inertia::render('admin/EventList', [
             'events' => $events,
         ]);
@@ -40,35 +40,44 @@ class EventController extends Controller
      */
     public function store(Request $request)
     {
-        // Validación mejorada
-        $validated = $request->validate([
+        $validatedEvent = $request->validate([
             'name_event' => 'required|string|max:255',
             'description_event' => 'required|string',
-            'image_event' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // 2MB máximo
-            'date_event' => 'required|date',
+            'image_event' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'location' => 'required|string',
+            'schedules' => 'required|array|min:1',
+            // Cambiar a datetime y mantener nombres del frontend
+            'schedules.*.start_datetime' => 'required|date',
+            'schedules.*.end_datetime' => 'required|date|after:schedules.*.start_datetime',
         ]);
 
-        $validated['owner'] = Auth::user()->email;
+        $validatedEvent['owner'] = Auth::user()->email;
 
-        // Manejo de la imagen
         if ($request->hasFile('image_event')) {
             $image = $request->file('image_event');
-
             $imageName = Str::slug($request->name_event) . '-' . time() . '.' . $image->getClientOriginalExtension();
-
-            // Guardar imagen en storage/app/public/events
             $imagePath = $image->storeAs('events', $imageName, 'public');
-
-            // Guardar ruta relativa en la base de datos
-            $validated['image_event'] = 'storage/events/' . $imageName;
+            // Corregir variable: usar validatedEvent en lugar de validated
+            $validatedEvent['image_event'] = 'storage/events/' . $imageName;
         }
 
+        \DB::beginTransaction();
         try {
-            $event = Event::create($validated);
+            $event = Event::create($validatedEvent);
+
+            foreach ($validatedEvent['schedules'] as $schedule) {
+                // Mantener nombres del frontend (start_datetime/end_datetime)
+                $event->schedules()->create([
+                    'start_datetime' => $schedule['start_datetime'],
+                    'end_datetime' => $schedule['end_datetime'],
+                ]);
+            }
+
+            \DB::commit();
             return Redirect::route('home')->with('success', 'Evento creado con éxito');
         } catch (\Exception $e) {
-            return Redirect::back()->with('error', 'Ocurrió un error al crear el evento');
+            \DB::rollback();
+            return Redirect::back()->with('error', 'Error: ' . $e->getMessage());
         }
     }
 
@@ -85,6 +94,7 @@ class EventController extends Controller
      */
     public function edit(Event $event)
     {
+        $event->load('schedules');
         return Inertia::render('admin/event-edit', [
             'event' => $event,
         ]);
@@ -93,37 +103,86 @@ class EventController extends Controller
     /**
      * Update the specified resource in storage.
      */
-public function update(Request $request, Event $event)
-{
-    $rules = [
-        'name_event' => 'required|string|max:255',
-        'description_event' => 'required|string',
-        'date_event' => 'required|date',
-        'location' => 'required|string',
-    ];
+    public function update(Request $request, Event $event)
+    {
+        $rules = [
+            'name_event' => 'required|string|max:255',
+            'description_event' => 'required|string',
+            'location' => 'required|string',
+            'schedules' => 'sometimes|array',
+            'schedules.*.id' => 'sometimes|exists:event_schedules,id',
+            // Cambiar a datetime y mantener nombres del frontend
+            'schedules.*.start_datetime' => 'required_with:schedules|date',
+            'schedules.*.end_datetime' => 'required_with:schedules|date|after:schedules.*.start_datetime',
+        ];
 
-    if ($request->hasFile('image_event')) {
-        $rules['image_event'] = 'image|mimes:jpeg,png,jpg,gif|max:2048';
+        if ($request->hasFile('image_event')) {
+            $rules['image_event'] = 'image|mimes:jpeg,png,jpg,gif|max:2048';
+        }
+
+        $validated = $request->validate($rules);
+
+        if ($request->hasFile('image_event')) {
+            // Eliminar imagen anterior si existe
+            if ($event->image_event) {
+                Storage::delete('public/' . str_replace('storage/', '', $event->image_event));
+            }
+
+            $image = $request->file('image_event');
+            $imageName = Str::slug($request->name_event) . '-' . time() . '.' . $image->getClientOriginalExtension();
+            $image->storeAs('events', $imageName, 'public');
+            $validated['image_event'] = 'storage/events/' . $imageName;
+        }
+
+        $validated['edited_by'] = Auth::user()->email;
+
+        \DB::beginTransaction();
+        try {
+            $event->update($validated);
+
+            if (isset($validated['schedules'])) {
+                // Obtener IDs existentes para comparación
+                $existingScheduleIds = $event->schedules->pluck('id')->toArray();
+                $updatedScheduleIds = [];
+
+                foreach ($validated['schedules'] as $scheduleData) {
+                    if (isset($scheduleData['id'])) {
+                        // Horario existente - actualizar
+                        $schedule = $event->schedules()->find($scheduleData['id']);
+                        if ($schedule) {
+                            $schedule->update([
+                                'start_datetime' => $scheduleData['start_datetime'],
+                                'end_datetime' => $scheduleData['end_datetime'],
+                            ]);
+                            $updatedScheduleIds[] = $scheduleData['id'];
+                        }
+                    } else {
+                        // Nuevo horario - crear
+                        $newSchedule = $event->schedules()->create([
+                            'start_datetime' => $scheduleData['start_datetime'],
+                            'end_datetime' => $scheduleData['end_datetime'],
+                        ]);
+                        $updatedScheduleIds[] = $newSchedule->id;
+                    }
+                }
+
+                // Eliminar horarios no incluidos en la actualización
+                $schedulesToDelete = array_diff($existingScheduleIds, $updatedScheduleIds);
+                if (!empty($schedulesToDelete)) {
+                    $event->schedules()->whereIn('id', $schedulesToDelete)->delete();
+                }
+            } else {
+                // Eliminar todos los horarios si no se recibe el array
+                $event->schedules()->delete();
+            }
+
+            \DB::commit();
+            return Redirect::route('home')->with('success', 'Evento y horarios actualizados');
+        } catch (\Exception $e) {
+            \DB::rollback();
+            return Redirect::back()->with('error', 'Error al actualizar: ' . $e->getMessage());
+        }
     }
-
-    $validated = $request->validate($rules);
-
-    if ($request->hasFile('image_event')) {
-        $image = $request->file('image_event');
-        $imageName = Str::slug($request->name_event) . '-' . time() . '.' . $image->getClientOriginalExtension();
-        $image->storeAs('events', $imageName, 'public');
-        $validated['image_event'] = 'storage/events/' . $imageName;
-    }
-
-    $validated['edited_by'] = Auth::user()->email;
-
-    try {
-        $event->update($validated);
-        return Redirect::route('home')->with('success', 'Evento actualizado con éxito');
-    } catch (\Exception $e) {
-        return Redirect::back()->with('error', 'Ocurrió un error al actualizar el evento');
-    }
-}
 
 
 
@@ -131,31 +190,31 @@ public function update(Request $request, Event $event)
     /**
      * Remove the specified resource from storage.
      */
-public function destroy(Event $event)
-{
-    try {
-        // Eliminar la imagen del servidor si existe
-        if ($event->image_event) {
-            Storage::delete('public/' . $event->image_event);
+    public function destroy(Event $event)
+    {
+        try {
+            // Eliminar la imagen del servidor si existe
+            if ($event->image_event) {
+                Storage::delete('public/' . $event->image_event);
+            }
+
+            // Guardar quién lo eliminó
+            $event->deleted_by = Auth::user()->email;
+            $event->save();
+
+            // Soft delete
+            $event->delete();
+
+            return Redirect::route('home')->with('success', 'Evento eliminado con éxito');
+        } catch (\Exception $e) {
+            return Redirect::back()->with('error', 'Ocurrió un error al eliminar el evento');
         }
-
-        // Guardar quién lo eliminó
-        $event->deleted_by = Auth::user()->email;
-        $event->save();
-
-        // Soft delete
-        $event->delete();
-
-        return Redirect::route('home')->with('success', 'Evento eliminado con éxito');
-    } catch (\Exception $e) {
-        return Redirect::back()->with('error', 'Ocurrió un error al eliminar el evento');
     }
-}
 
 
     public function all()
     {
-        $eventos = Event::all(); // o con paginación si quieres
+        $eventos = Event::with('schedules')->get();
         return Inertia::render('admin/all-events', [
             'eventos' => $eventos,
         ]);
@@ -198,7 +257,7 @@ public function destroy(Event $event)
 
     public function getEventById($id)
     {
-        $event = Event::with('user')->find($id);
+        $event = Event::with('users')->find($id);
 
         if (!$event) {
             return response()->json(['message' => 'Evento no encontrado'], 404);
@@ -232,7 +291,7 @@ public function destroy(Event $event)
             $query->whereBetween('date_event', [$request->start_date, $request->end_date]);
         }
 
-        $events = $query->with('user')->get();
+        $events = $query->with('users')->get();
 
         return Inertia::render('admin/EventSearchResults', [
             'events' => $events,
@@ -261,19 +320,19 @@ public function destroy(Event $event)
         router . reload();
     }
 
-public function verRegistrados($id)
-{
-    // Obtener el evento por su ID
-    $event = Event::findOrFail($id);
+    public function verRegistrados($id)
+    {
+        // Obtener el evento por su ID
+        $event = Event::findOrFail($id);
 
-    // Obtener los usuarios registrados al evento (ajusta la relación según tu modelo)
-    $users = $event->users()->select('users.id', 'users.name', 'users.email', 'users.phone', 'users.gender', 'users.type_participant')->get();
+        // Obtener los usuarios registrados al evento (ajusta la relación según tu modelo)
+        $users = $event->users()->select('users.id', 'users.name', 'users.email', 'users.phone', 'users.gender', 'users.birthdate', 'users.type_participant')->get();
 
-    return Inertia::render('SeeRegistered', [
-        'event' => $event,
-        'users' => $users,
-    ]);
-}
+        return Inertia::render('SeeRegistered', [
+            'event' => $event,
+            'users' => $users,
+        ]);
+    }
 
 
 }

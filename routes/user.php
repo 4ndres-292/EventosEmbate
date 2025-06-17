@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Event\EventController;
 use App\Http\Controllers\Event\InformationController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\Settings\CompanyController;
 
 use Inertia\Inertia;
 
@@ -26,4 +27,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin/grant-permits', [UserController::class, 'index']); // vista principal
     Route::get('/users/search', [UserController::class, 'searchByEmail']); // búsqueda ajax
     Route::post('/users/update-role', [UserController::class, 'updateRole']); // actualización rol
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/settings/companyProfiles', [CompanyController::class, 'index'])->name('company.profiles');
+    Route::post('/companies', [CompanyController::class, 'store'])->name('companies.store');
 });

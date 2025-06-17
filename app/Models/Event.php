@@ -11,7 +11,7 @@ class Event extends Model
     use HasFactory;
     use SoftDeletes;
 
-    protected $fillable = ['name_event', 'description_event', 'image_event', 'date_event', 'owner', 'location',];
+    protected $fillable = ['name_event', 'description_event', 'image_event', 'owner', 'location',];
     protected $dates = ['deleted_at'];
 
     public function users()
@@ -19,8 +19,14 @@ class Event extends Model
         return $this->belongsToMany(User::class, 'event_user');
     }
 
-     public function user()
+    public function user()
     {
         return $this->belongsTo(User::class, 'id_user'); // asegúrate que 'id_user' es la clave foránea correcta
     }
+
+    public function schedules()
+    {
+        return $this->hasMany(EventSchedule::class);
+    }
+
 }

@@ -11,7 +11,7 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('events', function (Blueprint $table) {
-            $table->unsignedBigInteger('edited_by')->nullable()->after('ubication');
+            $table->unsignedBigInteger('edited_by')->nullable()->after('location');
             $table->unsignedBigInteger('deleted_by')->nullable()->after('edited_by');
             $table->softDeletes(); // Esto agrega la columna deleted_at
         });

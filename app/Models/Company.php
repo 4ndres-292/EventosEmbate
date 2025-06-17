@@ -18,6 +18,11 @@ class Company extends Model
         'representative',
         'email',
         'phone',
-        'logo',
     ];
+
+    public function users()
+    {
+        return $this->hasMany(User::class);
+    }
+
 }

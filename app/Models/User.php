@@ -28,6 +28,7 @@ class User extends Authenticatable
         'email',
         'password',
         'type_user_id',
+        'company_id',
     ];
 
     /**
@@ -61,6 +62,11 @@ class User extends Authenticatable
     public function events()
     {
         return $this->belongsToMany(Event::class, 'event_user');
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
     }
 
 }

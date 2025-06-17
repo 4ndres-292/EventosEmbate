@@ -18,6 +18,11 @@ const sidebarNavItems: NavItem[] = [
         icon: null,
     },
     {
+        title: 'Empresa/Emprendimiento',
+        href: '/settings/companyProfiles',
+        icon: null,
+    },
+    {
         title: 'Apariencia',
         href: '/settings/appearance',
         icon: null,
