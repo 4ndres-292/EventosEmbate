@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { WelcomeHeader } from '@/components/welcome-header';
 
 interface User {
   id: number;
@@ -49,6 +50,8 @@ export default function ManageUserRoles() {
   };
 
   return (
+    <>
+    <WelcomeHeader/>
     <div className="max-w-3xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-4">Buscar usuarios y cambiar rol</h1>
 
@@ -96,5 +99,6 @@ export default function ManageUserRoles() {
         ))}
       </div>
     </div>
+    </>
   );
 }

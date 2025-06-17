@@ -23,10 +23,11 @@ class User extends Authenticatable
         'gender',
         'birthdate',
         'type_participant',
-        'career'=>'nullable',
+        'career',//=>'nullable',
         'institution',
         'email',
         'password',
+        'type_user_id',
     ];
 
     /**

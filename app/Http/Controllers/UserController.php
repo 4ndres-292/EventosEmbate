@@ -19,27 +19,35 @@ class UserController extends Controller
     }
 
     public function updateRole(Request $request)
-    {
-        $request->validate([
-            'email' => 'required|email|exists:users,email',
-            'type_user_id' => 'required|in:1,2,3', // 1 = admin, 2 = supervisor, 3 = estudiante
-        ]);
+{
+    $request->validate([
+        'user_id' => 'required|exists:users,id',
+        'type_user_id' => 'required|in:1,2,3',
+    ]);
 
-        $user = User::where('email', $request->email)->first();
-        $user->type_user_id = $request->type_user_id;
-        $user->save();
+    $user = User::findOrFail($request->user_id);
+    $user->type_user_id = $request->type_user_id;
+    $user->save();
 
-        return response()->json(['message' => 'Rol actualizado correctamente']);
-    }
+    return response()->json(['message' => 'Rol actualizado correctamente']);
+}
 
-        // app/Http/Middleware/AdminMiddleware.php
-    public function handle($request, Closure $next)
-    {
-        if (auth()->check() && auth()->user()->type_user_id === 1) {
-            return $next($request);
+
+  public function searchByEmail(Request $request)
+{
+    try {
+        $request->validate(['email' => 'nullable|string']);
+        $query = User::query();
+        if ($request->email) {
+            $query->where('email', 'like', '%' . $request->email . '%');
         }
-
-        return abort(403, 'No autorizado');
+        $users = $query->get(['id', 'name', 'email', 'type_user_id']);
+        return response()->json($users);
+    } catch (\Exception $e) {
+        \Log::error('searchByEmail error: '.$e->getMessage());
+        return response()->json(['error' => $e->getMessage()], 500);
     }
+}
+
 
 }
