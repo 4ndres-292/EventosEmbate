@@ -14,7 +14,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
   Route::get('event-edit/{event}', [EventController::class, 'edit'])
     ->name('event-edit');
-  Route::post('event-update/{event}', [EventController::class, 'update']);
+  Route::put('event-update/{event}', [EventController::class, 'update']);
   Route::delete('event-delete/{event}', [EventController::class, 'destroy']);
   Route::get('all-events', [EventController::class, 'all'])->name('event.all');
   Route::get('/eventos/{id}/registrados', [EventController::class, 'verRegistrados'])->name('eventos.verRegistrados');

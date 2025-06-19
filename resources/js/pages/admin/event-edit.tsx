@@ -64,19 +64,17 @@ export default function EventEdit({ event }: Props) {
 
   const submit: FormEventHandler = (e) => {
     e.preventDefault();
-    
+
     const formData = new FormData();
     formData.append('_method', 'put');
     formData.append('name_event', data.name_event);
     formData.append('description_event', data.description_event);
     formData.append('location', data.location);
-    
-    // Solo enviar imagen si es un archivo nuevo
+
     if (typeof data.image_event !== 'string' && data.image_event) {
       formData.append('image_event', data.image_event);
     }
-    
-    // Agregar schedules con sus IDs
+
     data.schedules.forEach((schedule, index) => {
       if (schedule.id) {
         formData.append(`schedules[${index}][id]`, schedule.id.toString());
@@ -85,11 +83,8 @@ export default function EventEdit({ event }: Props) {
       formData.append(`schedules[${index}][end_datetime]`, schedule.end_datetime);
     });
 
-    post(`/event-update/${event.id}`, {
-      data: formData,
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      },
+    put(`/event-update/${event.id}`, formData, {
+      forceFormData: true,
       onSuccess: () => reset(),
     });
   };
@@ -101,10 +96,7 @@ export default function EventEdit({ event }: Props) {
   }
 
   function addSchedule() {
-    setData('schedules', [...data.schedules, { 
-      start_datetime: '', 
-      end_datetime: '' 
-    }]);
+    setData('schedules', [...data.schedules, { start_datetime: '', end_datetime: '' }]);
   }
 
   function removeSchedule(index: number) {
@@ -112,10 +104,10 @@ export default function EventEdit({ event }: Props) {
     setData('schedules', newSchedules);
   }
 
-  // Manejo seguro de errores
   const getError = (field: string) => {
-    return errors[field as keyof typeof errors] || 
-           errors[field.replace(/_/g, '.') as keyof typeof errors];
+    return errors[field as keyof typeof errors] ??
+           errors[`schedules.${field}` as keyof typeof errors] ??
+           '';
   };
 
   return (
@@ -221,7 +213,7 @@ export default function EventEdit({ event }: Props) {
                       onChange={(e) => updateSchedule(index, 'start_datetime', e.target.value)}
                       className="bg-white dark:bg-zinc-800"
                     />
-                    <InputError message={getError(`schedules.${index}.start_datetime`)} />
+                    <InputError message={getError(`${index}.start_datetime`)} />
                   </div>
                   <div className="flex flex-col flex-1">
                     <Label htmlFor={`end_datetime_${index}`}>Fin</Label>
@@ -233,7 +225,7 @@ export default function EventEdit({ event }: Props) {
                       onChange={(e) => updateSchedule(index, 'end_datetime', e.target.value)}
                       className="bg-white dark:bg-zinc-800"
                     />
-                    <InputError message={getError(`schedules.${index}.end_datetime`)} />
+                    <InputError message={getError(`${index}.end_datetime`)} />
                   </div>
                   <div className="mt-6">
                     {data.schedules.length > 1 && (
@@ -285,17 +277,11 @@ export default function EventEdit({ event }: Props) {
   );
 }
 
-// Helper mejorado para formato de fecha
+// Helper: Formatear string fecha a 'datetime-local'
 function formatDateForInput(dateString: string): string {
   if (!dateString) return '';
-  
-  try {
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return '';
-    
-    const pad = (num: number) => num.toString().padStart(2, '0');
-    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-  } catch {
-    return '';
-  }
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }

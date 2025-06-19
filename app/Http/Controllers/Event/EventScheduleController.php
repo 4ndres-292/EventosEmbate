@@ -11,15 +11,15 @@ class EventScheduleController extends Controller
     public function store(Request $request, $eventId)
     {
         $request->validate([
-            'start_time' => 'required|date',
-            'end_time' => 'required|date|after:start_time',
+            'start_datetime' => 'required|date',
+            'end_datetime' => 'required|date|after:start_time',
         ]);
 
         $event = Event::findOrFail($eventId);
 
         $event->schedules()->create([
-            'start_time' => $request->start_time,
-            'end_time' => $request->end_time,
+            'start_datetime' => $request->start_time,
+            'end_datetime' => $request->end_time,
         ]);
 
         return response()->json(['message' => 'Horario agregado con éxito']);
