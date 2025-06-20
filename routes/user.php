@@ -28,8 +28,3 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/users/search', [UserController::class, 'searchByEmail']); // búsqueda ajax
     Route::post('/users/update-role', [UserController::class, 'updateRole']); // actualización rol
 });
-
-Route::middleware(['auth'])->group(function () {
-    Route::get('/settings/companyProfiles', [CompanyController::class, 'index'])->name('company.profiles');
-    Route::post('/companies', [CompanyController::class, 'store'])->name('companies.store');
-});

@@ -1,4 +1,5 @@
 import { Head, useForm } from '@inertiajs/react';
+import { Inertia } from '@inertiajs/inertia';
 import { useEffect, useState, FormEventHandler } from 'react';
 import { LoaderCircle } from 'lucide-react';
 import InputError from '@/components/input-error';
@@ -35,7 +36,7 @@ type Props = {
 };
 
 export default function EventEdit({ event }: Props) {
-  const { data, setData, put, processing, errors, reset } = useForm<EventForm>({
+  const { data, setData, processing, errors, reset } = useForm<EventForm>({
     name_event: event.name_event,
     description_event: event.description_event,
     image_event: event.image_event,
@@ -83,16 +84,20 @@ export default function EventEdit({ event }: Props) {
       formData.append(`schedules[${index}][end_datetime]`, schedule.end_datetime);
     });
 
-    put(`/event-update/${event.id}`, formData, {
-      forceFormData: true,
+    Inertia.post(`/event-update/${event.id}`, formData, {
       onSuccess: () => reset(),
+      forceFormData: true,
+      preserveScroll: true,
     });
   };
 
   function updateSchedule(index: number, field: keyof Schedule, value: string) {
-    const newSchedules = [...data.schedules];
-    newSchedules[index][field] = value;
-    setData('schedules', newSchedules);
+    const updated = [...data.schedules];
+    updated[index] = {
+      ...updated[index],
+      [field]: value,
+    };
+    setData('schedules', updated);
   }
 
   function addSchedule() {

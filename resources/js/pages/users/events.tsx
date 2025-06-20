@@ -10,9 +10,16 @@ type Evento = {
     name_event: string;
     description_event: string;
     date_event: string;
-    image_event: string;
+    image_event: string | null; // puede ser "/storage/events/xxx.png" o "events/xxx.png" o null
     location: string;
     owner: string;
+    schedules: Schedule[];
+};
+
+type Schedule = {
+    id: number;
+    start_datetime: string;
+    end_datetime: string;
 };
 
 interface Props {
@@ -69,6 +76,28 @@ export default function Events({ eventos, inscritos = [] }: Props) {
         evento.description_event.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    // Función para resolver la URL pública de la imagen
+    const resolveImageUrl = (path: string | null): string | null => {
+        if (!path) return null;
+        if (path.startsWith('http') || path.startsWith('/storage')) {
+            return path;
+        }
+        // Anteponer /storage/ si es ruta relativa guardada en BD
+        return `/storage/${path.replace(/^\/+/, '')}`;
+    };
+
+    // Formatea fecha si se necesita mostrarla en SeeMore u otro
+    const formatDateTime = (dateString: string) => {
+        const date = new Date(dateString);
+        return date.toLocaleString([], {
+            year: 'numeric',
+            month: 'numeric',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+        });
+    };
+
     return (
         <>
             <Head title="Eventos disponibles" />
@@ -100,18 +129,23 @@ export default function Events({ eventos, inscritos = [] }: Props) {
                         {filteredEventos.map((evento) => {
                             const yaInscrito = inscritosIds.includes(evento.id);
                             const isLoading = loadingIds.includes(evento.id);
+                            const imgUrl = resolveImageUrl(evento.image_event);
 
                             return (
                                 <div
                                     key={evento.id}
                                     className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden flex flex-col md:flex-row items-center"
                                 >
-                                    {evento.image_event && (
+                                    {imgUrl ? (
                                         <img
-                                            src={`/${evento.image_event}`}
+                                            src={imgUrl}
                                             alt={evento.name_event}
                                             className="w-full md:w-1/3 h-64 object-cover"
                                         />
+                                    ) : (
+                                        <div className="w-full md:w-1/3 h-64 bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-300">
+                                            Sin imagen
+                                        </div>
                                     )}
 
                                     <div className="p-6 flex-1 flex flex-col items-center md:items-start">
@@ -136,9 +170,10 @@ export default function Events({ eventos, inscritos = [] }: Props) {
                                                 onClick={() => handleInscripcion(evento.id)}
                                                 disabled={isLoading}
                                                 className={`
-                                                    ${yaInscrito
-                                                        ? 'bg-gray-400 hover:bg-gray-500'
-                                                        : 'bg-green-500 hover:bg-green-600'
+                                                    ${
+                                                        yaInscrito
+                                                            ? 'bg-gray-400 hover:bg-gray-500'
+                                                            : 'bg-green-500 hover:bg-green-600'
                                                     }
                                                     text-white px-4 py-2 rounded
                                                     ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
@@ -174,11 +209,17 @@ export default function Events({ eventos, inscritos = [] }: Props) {
             />
 
             {showSeeMore && selectedEvent && (
-                <SeeMore
-                    event={selectedEvent}
-                    onClose={() => setShowSeeMore(false)}
-                />
+            <SeeMore
+                event={{
+                ...selectedEvent,
+                // si quieres pasar la URL resuelta:
+                image_event: resolveImageUrl(selectedEvent.image_event) || null,
+                // schedules ya viene: selectedEvent.schedules
+                }}
+                onClose={() => setShowSeeMore(false)}
+            />
             )}
+
         </>
     );
 }

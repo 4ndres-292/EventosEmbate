@@ -56,6 +56,7 @@ class RegisteredUserController extends Controller
             'career' => $request->career,
             'institution' => $request->institution,
             'type_user_id' => TypeUser::where('name', 'Estudiante')->value('id') ?? 3,
+            'company_id' => null,
         ]);
 
         event(new Registered($user));
