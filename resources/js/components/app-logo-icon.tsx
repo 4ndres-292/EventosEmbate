@@ -4,7 +4,7 @@ export default function AppLogoIcon(props: React.ImgHTMLAttributes<HTMLImageElem
     return (
         <img
             {...props}
-            src="/storage/logo_embate.png"
+            src="/images/logo_embate.png"
             alt="Logo Embate"
         />
     );
