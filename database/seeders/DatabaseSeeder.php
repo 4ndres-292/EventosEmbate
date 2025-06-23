@@ -22,12 +22,13 @@ class DatabaseSeeder extends Seeder
             CareerSeeder::class,
             InstitutionSeeder::class,
             LocationSeeder::class,
+            TypeEntrepreneurshipSeeder::class,
         ]);
 
         //User::factory()->create([
-          //  'name' => 'Test User',
-            //'email' => 'test@example.com',
-            //'type_user_id' => DB::table('type_users')->where('name', 'Administrador')->value('id'),
+        //  'name' => 'Test User',
+        //'email' => 'test@example.com',
+        //'type_user_id' => DB::table('type_users')->where('name', 'Administrador')->value('id'),
         //]);
     }
 }

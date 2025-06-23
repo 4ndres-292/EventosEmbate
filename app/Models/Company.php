@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Company extends Model
 {
     use HasFactory;
-
+    protected $table = 'company_profiles';
     protected $fillable = [
         'name',
         'description',
@@ -25,7 +25,7 @@ class Company extends Model
     protected $hidden = [
         'password', // para que no se exponga en JSON
     ];
-    
+
     public function users()
     {
         return $this->hasMany(User::class);

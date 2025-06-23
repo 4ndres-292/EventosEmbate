@@ -38,41 +38,41 @@ export default function Register() {
     });
 
  // Estados para almacenar los datos de las API
- const [participantTypes, setParticipantTypes] = useState<string[]>([]);
- const [careersList, setCareersList] = useState<string[]>([]);
- const [institutionsList, setInstitutionsList] = useState<string[]>([]);
+const [participantTypes, setParticipantTypes] = useState<string[]>([]);
+const [careersList, setCareersList] = useState<string[]>([]);
+const [institutionsList, setInstitutionsList] = useState<string[]>([]);
 
  // Estados para el filtrado de carreras e instituciones
- const [filteredCareers, setFilteredCareers] = useState<string[]>(careersList);
- const [filteredInstitutions, setFilteredInstitutions] = useState<string[]>(institutionsList);
+const [filteredCareers, setFilteredCareers] = useState<string[]>(careersList);
+const [filteredInstitutions, setFilteredInstitutions] = useState<string[]>(institutionsList);
 
  // Estados para mostrar los dropdowns
- const [showCareerDropdown, setShowCareerDropdown] = useState(false);
- const [showInstitutionDropdown, setShowInstitutionDropdown] = useState(false);
+const [showCareerDropdown, setShowCareerDropdown] = useState(false);
+const [showInstitutionDropdown, setShowInstitutionDropdown] = useState(false);
 
  // Obtener los datos de las APIs al cargar el componente
- useEffect(() => {
-     axios.get('api/participant-types').then((response) => {
-         setParticipantTypes(response.data.map((type: { name: string }) => type.name));
-     });
+useEffect(() => {
+    axios.get('api/participant-types').then((response) => {
+        setParticipantTypes(response.data.map((type: { name: string }) => type.name));
+    });
 
-     axios.get('/api/career-types').then((response) => {
-         setCareersList(response.data.map((career: { name: string }) => career.name));
+    axios.get('/api/career-types').then((response) => {
+        setCareersList(response.data.map((career: { name: string }) => career.name));
          setFilteredCareers(response.data.map((career: { name: string }) => career.name)); // Inicializa con todos los elementos
-     });
+    });
 
-     axios.get('/api/institutions').then((response) => {
-         setInstitutionsList(response.data.map((institution: { name: string }) => institution.name));
+    axios.get('/api/institutions').then((response) => {
+        setInstitutionsList(response.data.map((institution: { name: string }) => institution.name));
          setFilteredInstitutions(response.data.map((institution: { name: string }) => institution.name)); // Inicializa con todos los elementos
-     });
- }, []);
+    });
+}, []);
 
- const submit: FormEventHandler = (e) => {
-     e.preventDefault();
-     post(route('register'), {
-         onFinish: () => reset('password', 'password_confirmation'),
-     });
- };   
+const submit: FormEventHandler = (e) => {
+    e.preventDefault();
+    post(route('register'), {
+        onFinish: () => reset('password', 'password_confirmation'),
+    });
+};
 
 const institutionRef = useRef<HTMLDivElement>(null);
 const inputRef = useRef<HTMLDivElement>(null);
@@ -104,13 +104,18 @@ const handleSelectInstitution = (institution: string) => {
     setShowInstitutionDropdown(false);
 };
 
+const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setData('birthdate', value);
+};
+
     return (
         <AuthLayout title="Crear una cuenta" description="Ingrese los datos a continuación para crear su cuenta">
             <Head title="Registro" />
             <form className="flex flex-col gap-6" onSubmit={submit}>
                 <div className="grid gap-6">
                     <div className="grid gap-2">
-                        <Label htmlFor="name">Nombre</Label>
+                        <Label htmlFor="name">Nombre Completo</Label>
                         <Input
                             id="name"
                             type="text"
@@ -127,7 +132,7 @@ const handleSelectInstitution = (institution: string) => {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="phone">Teléfono celular</Label>
+                        <Label htmlFor="phone">Celular</Label>
                         <Input
                             id="phone"
                             type="tel"
@@ -151,7 +156,7 @@ const handleSelectInstitution = (institution: string) => {
                             value={data.gender}
                             onChange={(e) => setData('gender', e.target.value as 'Masculino' | 'Femenino')}
                             disabled={processing}
-                            className='border p-1 rounded-md'
+                            className="border p-2 rounded-md bg-white dark:bg-zinc-900 text-black dark:text-white border-gray-300 dark:border-gray-700"
                         >
                             <option value="Masculino">Masculino</option>
                             <option value="Femenino">Femenino</option>
@@ -160,18 +165,19 @@ const handleSelectInstitution = (institution: string) => {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="birthdate">Fecha de nacimiento</Label>
-                        <Input
+                        <Label htmlFor="birthdate">Fecha de nacimiento (Mes/Dia/Año)</Label>
+                        <input
                             id="birthdate"
                             type="date"
                             required
                             tabIndex={4}
                             autoComplete="birthdate"
                             value={data.birthdate}
-                            onChange={(e) => setData('birthdate', e.target.value)}
+                            onChange={handleDateChange}
                             disabled={processing}
+                            className="border p-2 rounded-md bg-white dark:bg-zinc-900 text-black dark:text-white border-gray-300 dark:border-gray-700 w-full"
                         />
-                        <InputError message={errors.birthdate} className="mt-2" />
+                        <InputError message={errors.birthdate} className="mt-1" />
                     </div>
 
                     <div className="grid gap-2">
@@ -183,7 +189,7 @@ const handleSelectInstitution = (institution: string) => {
                             value={data.type_participant || ''}
                             onChange={(e) => setData('type_participant', e.target.value)}
                             disabled={processing}
-                            className="border p-1 rounded-md"
+                            className="border p-2 rounded-md bg-white dark:bg-zinc-900 text-black dark:text-white border-gray-300 dark:border-gray-700"
                         >
                             <option value="">Seleccione un tipo</option>
                             {participantTypes.map((type) => (
@@ -211,7 +217,7 @@ const handleSelectInstitution = (institution: string) => {
                                 className="w-full"
                             />
                             {showCareerDropdown && filteredCareers.length > 0 && (
-                                <div className="absolute z-10 w-full bg-white border rounded-md shadow-md max-h-40 overflow-y-auto">
+                                <div className="absolute z-10 w-full bg-white dark:bg-zinc-900 border border-gray-300 dark:border-gray-700 rounded-md shadow-md max-h-40 overflow-y-auto">
                                     {filteredCareers.map((career) => (
                                         <div
                                             key={career}
@@ -242,7 +248,7 @@ const handleSelectInstitution = (institution: string) => {
                             placeholder="Institución a la que pertenece"
                         />
                         {showInstitutionDropdown && filteredInstitutions.length > 0 && (
-                            <div className="absolute z-10 w-full bg-white border rounded-md shadow-md max-h-40 overflow-y-auto">
+                            <div className="absolute z-10 w-full bg-white dark:bg-zinc-900 border border-gray-300 dark:border-gray-700 rounded-md shadow-md max-h-40 overflow-y-auto">
                                 {filteredInstitutions.map((institution) => (
                                     <div
                                         key={institution}

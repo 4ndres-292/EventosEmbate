@@ -28,11 +28,11 @@ class ProfileUpdateRequest extends FormRequest
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
             'phone' => ['required', 'string', 'max:15'],  // Ejemplo de validación para el teléfono
-            'gender' => ['required', 'boolean'],  // Validación para género
+            'gender' => ['required', 'string'],  // Validación para género
             'birthdate' => ['required', 'date'],  // Validación para fecha de nacimiento
-            'type_participant' => ['required', 'string'],  // Validación para tipo de participante
             'career' => ['nullable', 'string', 'max:255'],  // Validación para carrera
             'institution' => ['required', 'string', 'max:255'],  // Validación para institución
+            'type_participant' => ['required', 'string'],  // Validación para tipo de participante
         ];
     }
 }

@@ -19,7 +19,7 @@ const sidebarNavItems: NavItem[] = [
     },
     {
         title: 'Empresa/Emprendimiento',
-        href: '/settings/companyProfiles',
+        href: '/settings/joinOrCreateCompany',
         icon: null,
     },
     {

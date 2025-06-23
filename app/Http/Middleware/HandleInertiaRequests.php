@@ -50,6 +50,13 @@ class HandleInertiaRequests extends Middleware
                         'name' => $request->user()->name,
                         'email' => $request->user()->email,
                         'type_user_id' => $request->user()->type_user_id,
+                        'phone' => $request->user()->phone,
+                        'gender' => $request->user()->gender,
+                        'birthdate' => $request->user()->birthdate, // si es nullable y es Carbon
+                        'type_participant' => $request->user()->type_participant,
+                        'career' => $request->user()->career,
+                        'institution' => $request->user()->institution,
+                        'email_verified_at' => $request->user()->email_verified_at,
                     ]
                     : null,
             ],

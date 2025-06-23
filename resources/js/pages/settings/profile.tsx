@@ -1,7 +1,8 @@
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Transition } from '@headlessui/react';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { FormEventHandler,useState } from 'react';
+import { FormEventHandler, useState, useEffect, useRef } from 'react';
+import axios from 'axios';
 
 import DeleteUser from '@/components/delete-user';
 import HeadingSmall from '@/components/heading-small';
@@ -9,12 +10,8 @@ import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-//import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import { WelcomeHeader } from '@/components/welcome-header';
-import { WelcomeFooter } from '@/components/welcome-footer';
-
-
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -27,71 +24,122 @@ type ProfileForm = {
     name: string;
     email: string;
     phone: string;
-    gender: boolean;
+    gender: string;
     birthdate: string;
     type_participant: string;
     career: string;
     institution: string;
-}
+};
 
 export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: boolean; status?: string }) {
     const { auth } = usePage<SharedData>().props;
 
-    // Asegúrate de que los valores sean del tipo correcto
     const { data, setData, patch, errors, processing, recentlySuccessful } = useForm<Required<ProfileForm>>({
-        name: auth.user.name || '', // Valor por defecto si no está definido
-        email: auth.user.email || '', // Valor por defecto si no está definido
-        phone: (auth.user.phone || '') as string, // Tipo seguro para phone
-        gender: (auth.user.gender !== undefined ? auth.user.gender : true) as boolean, // Asegúrate de que gender sea un booleano
-        birthdate: (auth.user.birthdate || '') as string, // Tipo seguro para birthdate
-        type_participant: (auth.user.type_participant || '') as string, // Asegura que sea un array de strings
-        career: (auth.user.career || '') as string, // Asegura que sea un array de strings
-        institution: (auth.user.institution || '') as string, // Tipo seguro para institution
+        name: auth.user.name || '',
+        email: auth.user.email || '',
+        phone: (auth.user.phone || '') as string,
+        gender: (auth.user.gender || 'Masculino') as string,
+        birthdate: (auth.user.birthdate || '') as string,
+        type_participant: (auth.user.type_participant || '') as string,
+        career: (auth.user.career || '') as string,
+        institution: (auth.user.institution || '') as string,
     });
+
+    // Estados para datos traídos por API
+    const [participantTypes, setParticipantTypes] = useState<string[]>([]);
+    const [careersList, setCareersList] = useState<string[]>([]);
+    const [institutionsList, setInstitutionsList] = useState<string[]>([]);
+
+    // Dropdown carrera
+    const [filteredCareers, setFilteredCareers] = useState<string[]>([]);
+    const [showCareerDropdown, setShowCareerDropdown] = useState(false);
+
+    // Dropdown institución
+    const [filteredInstitutions, setFilteredInstitutions] = useState<string[]>([]);
+    const [showInstitutionDropdown, setShowInstitutionDropdown] = useState(false);
+
+    const careerRef = useRef<HTMLDivElement>(null);
+    const institutionRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        // Fetch tipos de participante
+        axios.get('/api/participant-types').then(res => {
+            setParticipantTypes(res.data.map((item: { name: string }) => item.name));
+        }).catch(() => {
+            // fallback o log
+            setParticipantTypes(['Estudiante', 'Universitario', 'Docente', 'Administrativo', 'Emprendedor', 'Empresario']);
+        });
+
+        // Fetch carreras
+        axios.get('/api/career-types').then(res => {
+            const careers = res.data.map((item: { name: string }) => item.name);
+            setCareersList(careers);
+            setFilteredCareers(careers);
+        }).catch(() => {
+            const fallback = ['Ingeniería de Sistemas', 'Ingeniería Electrónica', 'Ingeniería Industrial', 'Ingeniería Civil', 'Ingeniería Mecánica'];
+            setCareersList(fallback);
+            setFilteredCareers(fallback);
+        });
+
+        // Fetch instituciones
+        axios.get('/api/institutions').then(res => {
+            const institutions = res.data.map((item: { name: string }) => item.name);
+            setInstitutionsList(institutions);
+            setFilteredInstitutions(institutions);
+        }).catch(() => {
+            setInstitutionsList([]);
+            setFilteredInstitutions([]);
+        });
+
+        // Click fuera para cerrar dropdowns
+        function handleClickOutside(event: MouseEvent) {
+            if (careerRef.current && !careerRef.current.contains(event.target as Node)) {
+                setShowCareerDropdown(false);
+            }
+            if (institutionRef.current && !institutionRef.current.contains(event.target as Node)) {
+                setShowInstitutionDropdown(false);
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-
         patch(route('profile.update'), {
             preserveScroll: true,
         });
     };
 
-    ///
-const careersList = ['Ingeniería de Sistemas', 
-    'Ingeniería Electrónica', 
-    'Ingeniería Industrial', 
-    'Ingeniería Civil', 
-    'Ingeniería Mecánica'];
+    const handleCareerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setData('career', value);
+        const filtered = careersList.filter(c => c.toLowerCase().includes(value.toLowerCase()));
+        setFilteredCareers(filtered);
+        setShowCareerDropdown(true);
+    };
 
-const [showDropdown, setShowDropdown] = useState(false);
-const [filteredCareers, setFilteredCareers] = useState<string[]>([]);
+    const handleSelectCareer = (career: string) => {
+        setData('career', career);
+        setShowCareerDropdown(false);
+    };
 
-// Maneja cambios en el input
-const handleCareerChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newCareer = event.target.value;
-    setData((prevData) => ({ ...prevData, career: newCareer }));
+    const handleInstitutionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setData('institution', value);
+        const filtered = institutionsList.filter(i => i.toLowerCase().includes(value.toLowerCase()));
+        setFilteredInstitutions(filtered);
+        setShowInstitutionDropdown(true);
+    };
 
-    // Filtra las opciones basadas en la entrada del usuario
-    const filtered = careersList.filter((career) =>
-        career.toLowerCase().includes(newCareer.toLowerCase())
-    );
-
-    setFilteredCareers(filtered);
-    setShowDropdown(true); // Muestra el dropdown si hay opciones
-};
-
-// Maneja la selección de una carrera
-const handleSelectCareer = (career: string) => {
-    setData((prevData) => ({ ...prevData, career })); // ✅ Corrige el valor
-    setShowDropdown(false); // ✅ Oculta el dropdown
-};
-
-///
+    const handleSelectInstitution = (institution: string) => {
+        setData('institution', institution);
+        setShowInstitutionDropdown(false);
+    };
 
     return (
         <>
-        <WelcomeHeader/>
+            <WelcomeHeader />
             <Head title="Configuración del perfil" />
 
             <SettingsLayout>
@@ -99,50 +147,51 @@ const handleSelectCareer = (career: string) => {
                     <HeadingSmall title="Información del perfil" description="Actualice sus datos" />
 
                     <form onSubmit={submit} className="space-y-6">
+                        {/* Nombre */}
                         <div className="grid gap-2">
                             <Label htmlFor="name">Nombre</Label>
-
                             <Input
                                 id="name"
-                                className="mt-1 block w-full"
+                                className="mt-1 block w-full bg-white dark:bg-zinc-900 text-black dark:text-white border border-gray-300 dark:border-gray-700 rounded-md"
                                 value={data.name}
                                 onChange={(e) => setData('name', e.target.value)}
                                 required
                                 autoComplete="name"
                                 placeholder="Nombre completo"
+                                disabled={processing}
                             />
-
                             <InputError className="mt-2" message={errors.name} />
                         </div>
 
+                        {/* Email */}
                         <div className="grid gap-2">
                             <Label htmlFor="email">Correo electrónico</Label>
-
                             <Input
                                 id="email"
                                 type="email"
-                                className="mt-1 block w-full"
+                                className="mt-1 block w-full bg-white dark:bg-zinc-900 text-black dark:text-white border border-gray-300 dark:border-gray-700 rounded-md"
                                 value={data.email}
                                 onChange={(e) => setData('email', e.target.value)}
                                 required
                                 autoComplete="username"
                                 placeholder="Correo electrónico"
+                                disabled={processing}
                             />
-
                             <InputError className="mt-2" message={errors.email} />
                         </div>
 
-                         {/* Teléfono */}
-                         <div className="grid gap-2">
+                        {/* Teléfono */}
+                        <div className="grid gap-2">
                             <Label htmlFor="phone">Teléfono celular</Label>
                             <Input
                                 id="phone"
                                 type="tel"
-                                className="mt-1 block w-full"
+                                className="mt-1 block w-full bg-white dark:bg-zinc-900 text-black dark:text-white border border-gray-300 dark:border-gray-700 rounded-md"
                                 value={data.phone}
                                 onChange={(e) => setData('phone', e.target.value)}
                                 required
                                 placeholder="Teléfono celular"
+                                disabled={processing}
                             />
                             <InputError className="mt-2" message={errors.phone} />
                         </div>
@@ -153,12 +202,13 @@ const handleSelectCareer = (career: string) => {
                             <select
                                 id="gender"
                                 required
-                                className="mt-1 block w-full"
-                                value={data.gender.toString()}
-                                onChange={(e) => setData('gender', e.target.value === 'true')}
+                                className="mt-1 block w-full bg-white dark:bg-zinc-900 text-black dark:text-white border border-gray-300 dark:border-gray-700 rounded-md p-2"
+                                value={data.gender}
+                                onChange={(e) => setData('gender', e.target.value)}
+                                disabled={processing}
                             >
-                                <option value="true">Masculino</option>
-                                <option value="false">Femenino</option>
+                                <option value="Masculino">Masculino</option>
+                                <option value="Femenino">Femenino</option>
                             </select>
                             <InputError className="mt-2" message={errors.gender} />
                         </div>
@@ -169,10 +219,11 @@ const handleSelectCareer = (career: string) => {
                             <Input
                                 id="birthdate"
                                 type="date"
-                                className="mt-1 block w-full"
+                                className="mt-1 block w-full bg-white dark:bg-zinc-900 text-black dark:text-white border border-gray-300 dark:border-gray-700 rounded-md"
                                 value={data.birthdate}
                                 onChange={(e) => setData('birthdate', e.target.value)}
                                 required
+                                disabled={processing}
                             />
                             <InputError className="mt-2" message={errors.birthdate} />
                         </div>
@@ -183,12 +234,13 @@ const handleSelectCareer = (career: string) => {
                             <select
                                 id="type_participant"
                                 required
-                                className="mt-1 block w-full"
+                                className="mt-1 block w-full bg-white dark:bg-zinc-900 text-black dark:text-white border border-gray-300 dark:border-gray-700 rounded-md p-2"
                                 value={data.type_participant || ''}
                                 onChange={(e) => setData('type_participant', e.target.value)}
+                                disabled={processing}
                             >
                                 <option value="">Seleccione un tipo</option>
-                                {['Estudiante', 'Universitario', 'Docente', 'Administrativo', 'Emprendedor', 'Empresario'].map((type) => (
+                                {participantTypes.map((type) => (
                                     <option key={type} value={type}>
                                         {type}
                                     </option>
@@ -198,23 +250,25 @@ const handleSelectCareer = (career: string) => {
                         </div>
 
                         {/* Carrera */}
-                        <div className="relative">
+                        <div className="relative" ref={careerRef}>
                             <Label htmlFor="career">Carrera</Label>
                             <Input
                                 id="career"
                                 type="text"
-                                value={data.career || ""}
+                                value={data.career || ''}
                                 onChange={handleCareerChange}
-                                onClick={() => setShowDropdown(true)}
+                                onClick={() => setShowCareerDropdown(true)}
                                 placeholder="Escriba su carrera"
-                                className="w-full"
+                                className="w-full bg-white dark:bg-zinc-900 text-black dark:text-white border border-gray-300 dark:border-gray-700 rounded-md"
+                                disabled={processing}
+                                autoComplete="off"
                             />
-                            {showDropdown && filteredCareers.length > 0 && (
-                                <div className="absolute z-10 w-full bg-white border rounded-md shadow-md max-h-40 overflow-y-auto">
+                            {showCareerDropdown && filteredCareers.length > 0 && (
+                                <div className="absolute z-10 w-full bg-white dark:bg-zinc-900 border border-gray-300 dark:border-gray-700 rounded-md shadow-md max-h-40 overflow-y-auto">
                                     {filteredCareers.map((career) => (
                                         <div
                                             key={career}
-                                            className="p-2 hover:bg-gray-100 cursor-pointer"
+                                            className="p-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-800"
                                             onClick={() => handleSelectCareer(career)}
                                         >
                                             {career}
@@ -222,45 +276,63 @@ const handleSelectCareer = (career: string) => {
                                     ))}
                                 </div>
                             )}
+                            <InputError className="mt-2" message={errors.career} />
                         </div>
 
-
                         {/* Institución */}
-                        <div className="grid gap-2">
+                        <div className="relative" ref={institutionRef}>
                             <Label htmlFor="institution">Institución</Label>
                             <Input
                                 id="institution"
-                                className="mt-1 block w-full"
+                                type="text"
                                 value={data.institution}
-                                onChange={(e) => setData('institution', e.target.value)}
-                                required
-                                placeholder="Institución"
+                                onChange={handleInstitutionChange}
+                                onClick={() => setShowInstitutionDropdown(true)}
+                                placeholder="Escriba su institución"
+                                className="w-full bg-white dark:bg-zinc-900 text-black dark:text-white border border-gray-300 dark:border-gray-700 rounded-md"
+                                disabled={processing}
+                                autoComplete="off"
                             />
+                            {showInstitutionDropdown && filteredInstitutions.length > 0 && (
+                                <div className="absolute z-10 w-full bg-white dark:bg-zinc-900 border border-gray-300 dark:border-gray-700 rounded-md shadow-md max-h-40 overflow-y-auto">
+                                    {filteredInstitutions.map((institution) => (
+                                        <div
+                                            key={institution}
+                                            className="p-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-800"
+                                            onClick={() => handleSelectInstitution(institution)}
+                                        >
+                                            {institution}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                             <InputError className="mt-2" message={errors.institution} />
                         </div>
 
+                        {/* Verificación correo */}
                         {mustVerifyEmail && auth.user.email_verified_at === null && (
                             <div>
-                                <p className="text-muted-foreground -mt-4 text-sm">
+                                <p className="text-muted-foreground -mt-4 text-sm dark:text-neutral-400">
                                     Tu dirección de correo electrónico no está verificada.{' '}
                                     <Link
                                         href={route('verification.send')}
                                         method="post"
                                         as="button"
-                                        className="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
+                                        className="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current dark:decoration-neutral-500"
                                     >
                                         Haz clic aquí para reenviar el correo de verificación.
                                     </Link>
                                 </p>
 
                                 {status === 'verification-link-sent' && (
-                                    <div className="mt-2 text-sm font-medium text-green-600">
+                                    <div className="mt-2 text-sm font-medium text-green-600 dark:text-green-400">
                                         Un nuevo enlace de verificación ha sido enviado a tu dirección de correo electrónico.
                                     </div>
                                 )}
                             </div>
                         )}
 
+                        {/* Botones y mensaje de guardado */}
                         <div className="flex items-center gap-4">
                             <Button disabled={processing}>Guardar</Button>
 
@@ -271,7 +343,7 @@ const handleSelectCareer = (career: string) => {
                                 leave="transition ease-in-out"
                                 leaveTo="opacity-0"
                             >
-                                <p className="text-sm text-neutral-600">Guardado</p>
+                                <p className="text-sm text-neutral-600 dark:text-neutral-400">Guardado</p>
                             </Transition>
                         </div>
                     </form>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Event;
 use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\User;
+use App\Models\TypeUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
@@ -262,13 +263,15 @@ class EventController extends Controller
     // En EventController.php
     public function registeredUsers($eventId)
     {
-        $event = Event::with('users')->findOrFail($eventId);
+        $event = Event::with(['users.company'])->findOrFail($eventId);
 
         return Inertia::render('admin/seeRegistered', [
             'event' => $event,
             'users' => $event->users,
         ]);
     }
+
+
 
     public function search(Request $request)
     {
@@ -315,14 +318,39 @@ class EventController extends Controller
 
     public function verRegistrados($id)
     {
-        // Obtener el evento por su ID
-        $event = Event::findOrFail($id);
+        \Log::info("Entrando a verRegistrados, event id: $id");
 
-        // Obtener los usuarios registrados al evento (ajusta la relación según tu modelo)
-        $users = $event->users()->select('users.id', 'users.name', 'users.email', 'users.phone', 'users.gender', 'users.birthdate', 'users.type_participant')->get();
+        $event = Event::findOrFail($id);
+        \Log::info("Evento encontrado", ['id' => $event->id]);
+
+        $users = $event->users()
+            ->with('company')
+            ->get()
+            ->map(function ($user) {
+                \Log::info("Usuario ID {$user->id}, relación company en map:", [
+                    'company' => $user->company ? $user->company->toArray() : null
+                ]);
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'phone' => $user->phone,
+                    'gender' => $user->gender,
+                    'birthdate' => $user->birthdate,
+                    'type_participant' => $user->type_participant,
+                    'company' => $user->company
+                        ? [
+                            'id' => $user->company->id,
+                            'name' => $user->company->name,
+                            'area' => $user->company->area,
+                        ]
+                        : null,
+                ];
+            });
+        \Log::info('verRegistrados payload users final:', $users->toArray());
 
         return Inertia::render('SeeRegistered', [
-            'event' => $event,
+            'event' => ['id' => $event->id, 'name_event' => $event->name_event],
             'users' => $users,
         ]);
     }

@@ -22,4 +22,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/settings/companyProfiles', [CompanyController::class, 'index'])->name('company.profiles');
     Route::post('/companies', [CompanyController::class, 'store'])->name('companies.store');
+
+    Route::get('/settings/joinOrCreateCompany', [CompanyController::class, 'choose'])->name('companies.choose');
+    Route::post('/settings/joinOrCreateCompany/join', [CompanyController::class, 'join'])->name('companies.join');
+    Route::get('/api/companies/search', [CompanyController::class, 'search'])->name('companies.search');
+
 });
