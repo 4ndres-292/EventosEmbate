@@ -4,6 +4,7 @@ import HeadingSmall from '@/components/heading-small';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
+import { WelcomeHeader } from '@/components/welcome-header';
 
 export default function JoinOrCreateCompany() {
   const [search, setSearch] = useState('');
@@ -29,6 +30,7 @@ export default function JoinOrCreateCompany() {
 
   return (
     <>
+    <WelcomeHeader/>
       <Head title="Unirse o crear empresa" />
       <SettingsLayout>
         <div className="space-y-6">

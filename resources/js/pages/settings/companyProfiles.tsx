@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import SettingsLayout from '@/layouts/settings/layout';
 import HeadingSmall from '@/components/heading-small';
 import MapEvents from '@/components/MapEvents';  // Ajusta la ruta según tu estructura
+import { WelcomeHeader } from '@/components/welcome-header';
 
 import axios from 'axios';
 import 'leaflet/dist/leaflet.css';
@@ -77,6 +78,7 @@ export default function CompanyProfiles() {
 
   return (
     <>
+      <WelcomeHeader/>
       <Head title="Crear perfil de Empresa/Emprendimiento" />
       <SettingsLayout>
         <div className="space-y-6">
