@@ -8,59 +8,69 @@ use App\Models\Location;
 
 class LocationController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    // Obtener todos
     public function index()
     {
         return response()->json(Location::all());
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
+    // Crear nuevo
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $location = Location::create([
+            'name' => $request->name,
+        ]);
+
+        return response()->json($location, 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
+    // Mostrar uno
     public function show(string $id)
     {
-        //
+        $location = Location::find($id);
+
+        if (!$location) {
+            return response()->json(['message' => 'Location not found'], 404);
+        }
+
+        return response()->json($location);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
+    // Actualizar uno
     public function update(Request $request, string $id)
     {
-        //
+        $location = Location::find($id);
+
+        if (!$location) {
+            return response()->json(['message' => 'Location not found'], 404);
+        }
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $location->update([
+            'name' => $request->name,
+        ]);
+
+        return response()->json($location);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    // Eliminar uno
     public function destroy(string $id)
     {
-        //
+        $location = Location::find($id);
+
+        if (!$location) {
+            return response()->json(['message' => 'Location not found'], 404);
+        }
+
+        $location->delete();
+
+        return response()->json(['message' => 'Location deleted']);
     }
 }

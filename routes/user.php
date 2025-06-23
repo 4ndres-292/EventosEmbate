@@ -28,3 +28,24 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/users/search', [UserController::class, 'searchByEmail']); // búsqueda ajax
     Route::post('/users/update-role', [UserController::class, 'updateRole']); // actualización rol
 });
+Route::middleware(['auth'])->group(function () {
+    Route::get('/admin/career-types', function () {
+        return Inertia::render('admin/CareerTypes');
+    })->name('admin.career-types');
+
+    Route::get('/admin/institutions', function () {
+        return Inertia::render('admin/Institutions');
+    })->name('admin.institutions');
+
+    Route::get('/admin/locations', function () {
+        return Inertia::render('admin/Locations');
+    })->name('admin.locations');
+
+    Route::get('/admin/participant-types', function () {
+        return Inertia::render('admin/ParticipantTypes');
+    })->name('admin.participant-types');
+
+    Route::get('/admin/type-entrepreneurship', function () {
+        return Inertia::render('admin/TypeEntrepreneurship');
+    })->name('admin.typeEntrepreneurship');
+});
