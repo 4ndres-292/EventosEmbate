@@ -69,7 +69,7 @@ export function WelcomeHeader() {
       return (
         <div className="flex-grow overflow-y-auto flex flex-col gap-4 pt-6 px-4">
           <Link href="/" className="mb-4 flex items-center">
-            <img src="/storage/logo_embate.png" alt="Logo" className="h-16 w-auto" />
+            <img src="/images/logo_embate.png" alt="Logo" className="h-16 w-auto" />
             <span className="ml-2 text-xl font-bold">Embate</span>
           </Link>
 
@@ -128,7 +128,7 @@ export function WelcomeHeader() {
       return (
         <div className="flex-grow overflow-y-auto flex flex-col gap-4 pt-6 px-4">
           <Link href="/" className="mb-4 flex items-center">
-            <img src="/storage/logo_embate.png" alt="Logo" className="h-16 w-auto" />
+            <img src="/images/logo_embate.png" alt="Logo" className="h-16 w-auto" />
             <span className="ml-2 text-xl font-bold">Embate</span>
           </Link>
 
@@ -180,7 +180,7 @@ export function WelcomeHeader() {
     return (
       <div className="flex-grow overflow-y-auto flex flex-col gap-4 pt-6 px-4">
         <Link href="/" className="mb-4 flex items-center">
-          <img src="/storage/logo_embate.png" alt="Logo" className="h-16 w-auto" />
+          <img src="/images/logo_embate.png" alt="Logo" className="h-16 w-auto" />
           <span className="ml-2 text-xl font-bold">Embate</span>
         </Link>
 
@@ -441,7 +441,7 @@ export function WelcomeHeader() {
 
         {/* Logo (desktop) */}
         <Link href="/" className="hidden lg:flex items-center flex-shrink-0">
-          <img src="/storage/logo_embate.png" alt="Logo" className="h-10 w-auto" />
+          <img src="/images/logo_embate.png" alt="Logo" className="h-10 w-auto" />
           <span className="ml-2 text-lg font-bold text-gray-900 dark:text-white">Embate</span>
         </Link>
 
