@@ -66,7 +66,7 @@ export default function CompanyProfiles() {
   const [types, setTypes] = useState<{ id: number; name: string }[]>([]);
 
   useEffect(() => {
-    axios.get('/api/typeEntrepreneurship')
+    axios.get('/api/type-entrepreneurship')
       .then((response) => {
         setTypes(response.data);
       })
