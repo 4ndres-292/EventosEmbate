@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/auth-layout';
 
 import { WelcomeHeader } from '@/components/welcome-header';
+import { router } from '@inertiajs/react';
 
 type Schedule = {
   start_datetime: string;
@@ -203,7 +204,7 @@ export default function EventCreate() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => reset()}
+                onClick={() => router.visit('/')}
               >
                 Cancelar
               </Button>

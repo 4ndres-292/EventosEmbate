@@ -155,19 +155,21 @@ export default function EventEdit({ event }: Props) {
               <InputError message={getError('description_event')} />
             </div>
 
-            {/* Imagen */}
+            {/* Imagen actual separada visualmente */}
+            {event.image_event && (
+              <div className="mb-2">
+                <p className="text-sm text-gray-500">Imagen actual:</p>
+                <img 
+                  src={event.image_event}
+                  alt="Imagen actual del evento"
+                  className="h-20 object-cover rounded"
+                />
+              </div>
+            )}
+
+            {/* Campo para subir nueva imagen */}
             <div className="grid gap-2">
-              <Label htmlFor="image_event">Imagen del evento</Label>
-              {event.image_event && (
-                <div className="mb-2">
-                  <p className="text-sm text-gray-500">Imagen actual:</p>
-                  <img 
-                    src={event.image_event} 
-                    alt="Imagen actual del evento" 
-                    className="h-20 object-cover rounded"
-                  />
-                </div>
-              )}
+              <Label htmlFor="image_event">Nueva imagen del evento</Label>
               <Input
                 id="image_event"
                 type="file"

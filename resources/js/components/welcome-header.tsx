@@ -51,66 +51,69 @@ export function WelcomeHeader() {
 
     return (
         <header className="border-b bg-white dark:bg-gray-900 dark:border-gray-700">
-            <div className="mx-auto flex h-16 items-center px-4 md:max-w-7xl">
+            <div className="mx-auto flex h-16 items-center px-4 max-w-screen-xl">
                 {/* Menú móvil */}
                 <div className="lg:hidden">
                     <Sheet>
                         <SheetTrigger asChild>
                             <Button variant="ghost" size="icon" className="mr-2">
-                                <Menu className="h-5 w-5" />
+                                <Menu className="h-6 w-6" />
                             </Button>
                         </SheetTrigger>
                         <SheetContent
-                            side="left"
-                            className="w-64 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-                        >
-                            <div className="flex h-full flex-col gap-4 pt-6">
-                                <Link href="/" className="mb-4 flex items-center">
-                                    <img
-                                        src="/storage/logo_embate.png"
-                                        alt="Logo"
-                                        className="h-20 w-auto"
-                                    />
-                                    <span className="ml-2 text-lg font-bold">Embate</span>
-                                </Link>
+  side="left"
+  className="w-64 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex flex-col"
+>
+  {/* Contenido con scroll */}
+  <div className="flex-grow overflow-y-auto flex flex-col gap-4 pt-6 px-4">
+    <Link href="/" className="mb-4 flex items-center">
+      <img
+        src="/storage/logo_embate.png"
+        alt="Logo"
+        className="h-16 w-auto"
+      />
+      <span className="ml-2 text-xl font-bold">Embate</span>
+    </Link>
 
-                                {navItems.map((item) => (
-                                    <Link
-                                        key={item.title}
-                                        href={item.href}
-                                        className="px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
-                                    >
-                                        {item.title}
-                                    </Link>
-                                ))}
+    {navItems.map((item) => (
+      <Link
+        key={item.title}
+        href={item.href}
+        className="px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+      >
+        {item.title}
+      </Link>
+    ))}
+  </div>
 
-                                <div className="mt-auto space-y-2">
-                                    {auth.user ? (
-                                        <UserDropdown user={auth.user} />
-                                    ) : (
-                                        <>
-                                            <Link
-                                                href="/login"
-                                                className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
-                                            >
-                                                Iniciar sesión
-                                            </Link>
-                                            <Link
-                                                href="/register"
-                                                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                                            >
-                                                Crear cuenta
-                                            </Link>
-                                        </>
-                                    )}
-                                </div>
-                            </div>
-                        </SheetContent>
+  {/* Footer con login/registro */}
+  <div className="mt-auto space-y-2 px-4 py-4 border-t border-gray-200 dark:border-gray-700">
+    {auth.user ? (
+      <UserDropdown user={auth.user} />
+    ) : (
+      <>
+        <Link
+          href="/login"
+          className="block px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 text-center"
+        >
+          Iniciar sesión
+        </Link>
+        <Link
+          href="/register"
+          className="block px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-center"
+        >
+          Crear cuenta
+        </Link>
+      </>
+    )}
+  </div>
+</SheetContent>
+
                     </Sheet>
                 </div>
 
                 {/* Logo (desktop) */}
-                <Link href="/" className="hidden lg:flex items-center">
+                <Link href="/" className="hidden lg:flex items-center flex-shrink-0">
                     <img
                         src="/storage/logo_embate.png"
                         alt="Logo"
@@ -122,13 +125,13 @@ export function WelcomeHeader() {
                 </Link>
 
                 {/* Navegación (desktop) */}
-                <nav className="hidden lg:flex ml-8 space-x-6">
+                <nav className="hidden lg:flex ml-8 space-x-6 flex-wrap max-w-[60vw] overflow-x-auto">
                     {navItems.map((item) => (
                         <Link
                             key={item.title}
                             href={item.href}
                             className={cn(
-                                'px-3 py-2 transition-colors hover:text-blue-600 dark:hover:text-blue-400 text-gray-700 dark:text-gray-200',
+                                'px-3 py-2 transition-colors hover:text-blue-600 dark:hover:text-blue-400 text-gray-700 dark:text-gray-200 whitespace-nowrap',
                                 url === item.href && 'text-blue-600 dark:text-blue-400 font-medium'
                             )}
                         >
@@ -138,20 +141,20 @@ export function WelcomeHeader() {
                 </nav>
 
                 {/* Usuario */}
-                <div className="ml-auto hidden lg:flex items-center gap-4">
+                <div className="ml-auto hidden lg:flex items-center gap-4 flex-shrink-0">
                     {auth.user ? (
                         <UserDropdown user={auth.user} />
                     ) : (
                         <>
                             <Link
                                 href="/login"
-                                className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
+                                className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 whitespace-nowrap"
                             >
                                 Iniciar sesión
                             </Link>
                             <Link
                                 href="/register"
-                                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 whitespace-nowrap"
                             >
                                 Crear cuenta
                             </Link>
